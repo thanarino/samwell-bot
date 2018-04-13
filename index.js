@@ -147,7 +147,11 @@ function checkID(userID) {
                 } else {
                     var bodyObj = JSON.parse(body);
 
+                    console.log(bodyObj);
+
                     let data = Object.assign({}, bodyObj, { _id: userID });
+
+                    console.log(data);
 
                     Student.create(data, function (err, results) {
                         if (err) {
