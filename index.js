@@ -83,7 +83,7 @@ function processPostback(event) {
 
 // sends message to user
 function sendMessage(recipientId, message) {
-    request({
+    return request({
         url: "https://graph.facebook.com/v2.6/me/messages",
         qs: {
             access_token: process.env.PAGE_ACCESS_TOKEN
@@ -94,13 +94,6 @@ function sendMessage(recipientId, message) {
                 id: recipientId
             },
             message: message,
-        }
-    }, function (error, response, body) {
-        if (error) {
-            console.log("Error sending message: " + response.error);
-            return true;
-        } else {
-            return true;
         }
     });
 }
@@ -131,10 +124,9 @@ function checkID(userID) {
         if (err) {
             sendMessage(userID, { text: "Something went wrong. Please delete this conversation and try again!" });
         } else if (!student) {
-            if (sendMessage(userID, { text: "It seems that you are not registered yet." })) {
-                if (sendMessage(userID, { text: "Registering your account, please wait..." })) {
+            sendMessage(userID, { text: "It seems that you are not registered yet." }).then(() => {
+                sendMessage(userID, { text: "Registering your account, please wait..." }).then(() => {
                     isTyping(userID, true);
-
                     request({
                         url: "https://graph.facebook.com/v2.6/" + userID,
                         qs: {
@@ -169,8 +161,8 @@ function checkID(userID) {
                             })
                         }
                     });
-                }
-            }
+                })
+            })
         } else if (student) {
             sendMessage(userID, { text: "Welcome back!" });
         }
