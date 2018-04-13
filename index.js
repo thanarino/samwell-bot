@@ -2,6 +2,9 @@ var express = require("express");
 var request = require("request");
 var bodyParser = require("body-parser");
 
+var db = mongoose.connect(process.env.MONGODB_URI);
+var Student = require('./models/students');
+
 var app = express();
 app.use(bodyParser.urlencoded({
     extended: false
@@ -52,27 +55,28 @@ function processPostback(event) {
     if (payload === "Greeting") {
         // Get user's first name from the User Profile API
         // and include it in the greeting
-        request({
-            url: "https://graph.facebook.com/v2.6/" + senderId,
-            qs: {
-                access_token: process.env.PAGE_ACCESS_TOKEN,
-                fields: "first_name"
-            },
-            method: "GET"
-        }, function (error, response, body) {
-            var greeting = "";
-            if (error) {
-                console.log("Error getting user's name: " + error);
-            } else {
-                var bodyObj = JSON.parse(body);
-                name = bodyObj.first_name;
-                greeting = "Hi " + name + ". ";
-            }
-            var message = greeting + "My name is SP Movie Bot. I can tell you various details regarding movies. What movie would you like to know about?";
-            sendMessage(senderId, {
-                text: message
-            });
-        });
+        // request({
+        //     url: "https://graph.facebook.com/v2.6/" + senderId,
+        //     qs: {
+        //         access_token: process.env.PAGE_ACCESS_TOKEN,
+        //         fields: "first_name"
+        //     },
+        //     method: "GET"
+        // }, function (error, response, body) {
+        //     var greeting = "";
+        //     if (error) {
+        //         console.log("Error getting user's name: " + error);
+        //     } else {
+        //         var bodyObj = JSON.parse(body);
+        //         name = bodyObj.first_name;
+        //         greeting = "Hi " + name + ". ";
+        //     }
+        //     var message = greeting + "My name is SP Movie Bot. I can tell you various details regarding movies. What movie would you like to know about?";
+        //     sendMessage(senderId, {
+        //         text: message
+        //     });
+        // });
+        checkID(senderId);
     }
 }
 
@@ -97,3 +101,66 @@ function sendMessage(recipientId, message) {
     });
 }
 
+function isTyping(recipientId, isTyping) {
+    let typing = isTyping ? "typing_on" : "typing_off";
+    request({
+        url: "https://graph.facebook.com/v2.6/me/messages",
+        qs: {
+            access_token: process.env.PAGE_ACCESS_TOKEN
+        },
+        method: "POST",
+        json: {
+            recipient: {
+                id: recipientId
+            },
+            sender_action: typing,
+        }
+    }, function (error, response, body) {
+        if (error) {
+            console.log("Error sending message: " + response.error);
+        }
+    });
+}
+
+function checkID(userID) {
+    Student.findOne({ _id: userID }, function (err, student) {
+        if (err) {
+            sendMessage(userID, { text: "Something went wrong. Please delete this conversation and try again!" });
+        } else if (!student) {
+            sendMessage(userID, { text: "It seems that you are not registered yet." });
+            sendMessage(userID, { text: "Registering your account, please wait..." });
+            isTyping(userID, true);
+
+            request({
+                url: "https://graph.facebook.com/v2.6/" + userID,
+                qs: {
+                    access_token: process.env.PAGE_ACCESS_TOKEN,
+                    fields: ["first_name", "last_name", "profile_pic", "gender"]
+                },
+                method: "GET"
+            }, function (error, response, body) {
+                var greeting = "";
+                if (error) {
+                    isTyping(userID, false);
+                    sendMessage(userID, { text: "A request error has occurred. Please delete this conversation and try again!" });
+                } else {
+                    var bodyObj = JSON.parse(body);
+
+                    let data = Object.assign({}, bodyObj, { _id: userID });
+
+                    Student.create(data, function (err, results) {
+                        if (err) {
+                            isTyping(userID, false);
+                            sendMessage(userID, { text: "A request error has occurred. Please delete this conversation and try again!" });
+                        } else {
+                            isTyping(userID, false);
+                            sendMessage(userID, { text: `Sign up successful! You are now signed in, ${bodyObj.first_name}!` });
+                        }
+                    })
+                }
+            });
+        } else if (student) {
+            sendMessage(userID, { text: "Welcome back!" });
+        }
+    });
+}
