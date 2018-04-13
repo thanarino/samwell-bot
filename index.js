@@ -164,7 +164,7 @@ function checkID(userID) {
                 })
             })
         } else if (student) {
-            sendMessage(userID, { text: "Welcome back!" });
+            sendMessage(userID, { text: `Welcome back, ${student.given_name}!` });
         }
     });
 }
