@@ -136,7 +136,7 @@ function checkID(userID) {
                 url: "https://graph.facebook.com/v2.6/" + userID,
                 qs: {
                     access_token: process.env.PAGE_ACCESS_TOKEN,
-                    fields: ["first_name", "last_name", "profile_pic", "gender"]
+                    fields: "first_name, last_name, profile_pic, gender"
                 },
                 method: "GET"
             }, function (error, response, body) {
