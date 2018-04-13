@@ -98,6 +98,9 @@ function sendMessage(recipientId, message) {
     }, function (error, response, body) {
         if (error) {
             console.log("Error sending message: " + response.error);
+            return true;
+        } else {
+            return true;
         }
     });
 }
@@ -119,9 +122,6 @@ function isTyping(recipientId, isTyping) {
     }, function (error, response, body) {
         if (error) {
             console.log("Error sending message: " + response.error);
-            return true;
-        } else {
-            return true;
         }
     });
 }
