@@ -119,6 +119,9 @@ function isTyping(recipientId, isTyping) {
     }, function (error, response, body) {
         if (error) {
             console.log("Error sending message: " + response.error);
+            return true;
+        } else {
+            return true;
         }
     });
 }
@@ -128,42 +131,46 @@ function checkID(userID) {
         if (err) {
             sendMessage(userID, { text: "Something went wrong. Please delete this conversation and try again!" });
         } else if (!student) {
-            sendMessage(userID, { text: "It seems that you are not registered yet." });
-            sendMessage(userID, { text: "Registering your account, please wait..." });
-            isTyping(userID, true);
+            if (sendMessage(userID, { text: "It seems that you are not registered yet." })) {
+                if (sendMessage(userID, { text: "Registering your account, please wait..." })) {
+                    isTyping(userID, true);
 
-            request({
-                url: "https://graph.facebook.com/v2.6/" + userID,
-                qs: {
-                    access_token: process.env.PAGE_ACCESS_TOKEN,
-                    fields: "first_name, last_name, profile_pic, gender"
-                },
-                method: "GET"
-            }, function (error, response, body) {
-                var greeting = "";
-                if (error) {
-                    isTyping(userID, false);
-                    sendMessage(userID, { text: "A request error has occurred. Please delete this conversation and try again!" });
-                } else {
-                    var bodyObj = JSON.parse(body);
-
-                    console.log(bodyObj);
-
-                    let data = Object.assign({}, bodyObj, { _id: userID });
-
-                    console.log(data);
-
-                    Student.create(data, function (err, results) {
-                        if (err) {
+                    request({
+                        url: "https://graph.facebook.com/v2.6/" + userID,
+                        qs: {
+                            access_token: process.env.PAGE_ACCESS_TOKEN,
+                            fields: "first_name, last_name, profile_pic, gender"
+                        },
+                        method: "GET"
+                    }, function (error, response, body) {
+                        var greeting = "";
+                        if (error) {
                             isTyping(userID, false);
                             sendMessage(userID, { text: "A request error has occurred. Please delete this conversation and try again!" });
                         } else {
-                            isTyping(userID, false);
-                            sendMessage(userID, { text: `Sign up successful! You are now signed in, ${bodyObj.first_name}!` });
+                            var bodyObj = JSON.parse(body);
+
+                            let data = {
+                                "_id": userID,
+                                "given_name": bodyObj.first_name,
+                                "family_name": bodyObj.last_name,
+                                "profile_pic": bodyObj.profile_pic,
+                                "gender": bodyObj.gender,
+                            };
+
+                            Student.create(data, function (err, results) {
+                                if (err) {
+                                    isTyping(userID, false);
+                                    sendMessage(userID, { text: "A request error has occurred. Please delete this conversation and try again!" });
+                                } else {
+                                    isTyping(userID, false);
+                                    sendMessage(userID, { text: `Sign up successful! You are now signed in, ${bodyObj.first_name}!` });
+                                }
+                            })
                         }
-                    })
+                    });
                 }
-            });
+            }
         } else if (student) {
             sendMessage(userID, { text: "Welcome back!" });
         }
