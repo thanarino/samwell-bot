@@ -6,7 +6,7 @@ let Wit = require('node-wit').Wit;
 let log = require('node-wit').log;
 
 let db = mongoose.connect(process.env.MONGODB_URI);
-let Student = require('./models/students');
+let Student = require('../models/students');
 
 let { isTyping, sendMessage } = require('./common');
 
