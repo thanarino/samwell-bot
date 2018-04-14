@@ -1,4 +1,4 @@
-let request = require('request-promise');
+import request from 'request-promise';
 
 // sends message to user
 sendMessage = (recipientId, message) => {

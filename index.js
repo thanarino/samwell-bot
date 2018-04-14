@@ -1,15 +1,15 @@
-let express = require("express");
-let request = require("request-promise");
-let bodyParser = require("body-parser");
-let mongoose = require('mongoose');
-let Wit = require('node-wit').Wit;
-let log = require('node-wit').log;
+import express from 'express';
+import request from 'request-promise';
+import bodyParser from 'body-parser';
+import mongoose from 'mongoose';
+import { Wit, log } from 'node-wit';    
 
 let db = mongoose.connect(process.env.MONGODB_URI);
-let Student = require('./models/students');
 
-let { isTyping, sendMessage } = require('./exports/common');
-let { checkID } = require('./exports/signup');
+import { Student } from './models/students';
+
+import { isTyping, sendMessage } from './exports/common';
+import { checkID } from './exports/signup';
 
 const WIT_TOKEN = process.env.WIT_TOKEN;
 const FB_PAGE_TOKEN = process.env.FB_PAGE_TOKEN;
