@@ -79,8 +79,8 @@ app.post("/webhook", (req, res) => {
                         sendMessage(sender, { text: 'Sorry, I can only understand text messages for now.' })
                             .catch(console.error);
                     } else if (text) {
-                        wit.message(text).then((entities) => {
-                            analyzeEntities(sender, entities);
+                        wit.message(text).then((res) => {
+                            analyzeEntities(sender, res);
                             // console.log(JSON.stringify(entities));
                             // sendMessage(sender, { text: `We've recieved your message: ${text}.` })
                         })
@@ -101,7 +101,8 @@ app.post("/webhook", (req, res) => {
     }
 });
 
-analyzeEntities = (sender, entities) => {
+analyzeEntities = (sender, res) => {
+    const entities = res.entities;
     //if wit only detected one intent
     if (entities.intent.length === 1) {
         if (entities.intent[0].value === "scheduleConsultation") {
