@@ -11,4 +11,4 @@ let studentSchema = new Schema({
     roles: { type: [String] },
 });
 
-module.exports = mongoose.model("Student", studentSchema, 'users');
+export default mongoose.model("Student", studentSchema, 'users');

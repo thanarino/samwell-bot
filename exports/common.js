@@ -38,7 +38,5 @@ isTyping = (recipientId, isTyping) => {
     });
 }
 
-module.exports = {
-    sendMessage: sendMessage,
-    isTyping: isTyping,
-}
+export const sendMessage = sendMessage;
+export const isTyping = isTyping;
