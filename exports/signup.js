@@ -1,6 +1,6 @@
-import express from 'express';
-import request from 'request-promise';
-import bodyParser from 'body-parser';
+import * as express from "express";
+import * as request from 'request-promise';
+import * as bodyParser from 'body-parser';
 import mongoose from 'mongoose';
 import { Wit, log } from 'node-wit';
 
