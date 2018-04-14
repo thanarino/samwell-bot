@@ -16,7 +16,7 @@ app.use(bodyParser.urlencoded({
 app.use(bodyParser.json());
 app.listen((process.env.PORT || 5000));
 
-app.post('/', function (req, res) {
+app.post('/webhook', function (req, res) {
     connect.handleMessage(req, res, onMessage);
 })
 
