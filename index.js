@@ -80,9 +80,9 @@ app.post("/webhook", (req, res) => {
                             .catch(console.error);
                     } else if (text) {
                         wit.message(text).then((entities) => {
-                            // analyzeEntities(entities);
-                            console.log(JSON.stringify(entities));
-                            sendMessage(sender, { text: `We've recieved your message: ${text}.` })
+                            analyzeEntities(sender, entities);
+                            // console.log(JSON.stringify(entities));
+                            // sendMessage(sender, { text: `We've recieved your message: ${text}.` })
                         })
                             .catch((err) => {
                                 sendMessage(sender, {
@@ -100,6 +100,20 @@ app.post("/webhook", (req, res) => {
         res.sendStatus(200);
     }
 });
+
+analyzeEntities = (sender, entities) => {
+    //if wit only detected one intent
+    if (entities.intent.length === 1) {
+        if (entities.intent[0].value === "scheduleConsultation") {
+            if (entities.subject.length <= 1) {
+                //error, should be one subject only
+                sendMessage(sender, { text: 'Oh no! Only one subject per request please! I always pretend I\'m good at multitasking but in reality, I\'m really bad at it!' });
+            } else {
+                sendMessage(sender, { text: 'Okay! I\'m on it!'})
+            }
+        }
+    }
+}
 
 processPostback = (event) => {
     let senderId = event.sender.id;
