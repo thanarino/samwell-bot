@@ -24,6 +24,8 @@ function onMessage(message) {
     var content = message.content;
     var type = message.type;
 
+    console.log(message);
+
     message.addReply([{ type: 'text', content: 'Hello, World!' }])
     message.reply();
 }
