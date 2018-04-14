@@ -11,9 +11,11 @@
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.18.2",
+    "botbuilder-wit-remade": "^1.0.1",
     "express": "^4.16.3",
     "mongoose": "^5.0.14",
     "node-wit": "^5.0.0",
+    "recastai": "^3.7.0",
     "request": "^2.85.0",
     "request-promise": "^4.2.2"
   }
