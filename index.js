@@ -80,9 +80,9 @@ app.post("/webhook", (req, res) => {
                             .catch(console.error);
                     } else if (text) {
                         wit.message(text).then((entities) => {
-                            analyzeEntities(entities);
-                            // console.log(JSON.stringify(entities));
-                            // sendMessage(sender, { text: `We've recieved your message: ${text}.` })
+                            // analyzeEntities(entities);
+                            console.log(JSON.stringify(entities));
+                            sendMessage(sender, { text: `We've recieved your message: ${text}.` })
                         })
                             .catch((err) => {
                                 sendMessage(sender, {
