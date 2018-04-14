@@ -77,11 +77,11 @@ app.post("/webhook", function (req, res) {
                             .catch(console.error);
                     } else if (text) {
                         wit.message(text).then((entities) => {
-                            console.log(entities);
+                            console.log(JSON.stringify(entities));
                             sendMessage(sender, { text: `We've recieved your message: ${text}.` })
                         })
                             .catch((err) => {
-                                console.log('Oops, we got an error from Wit: ', err.stack || err);
+                                console.log('Oops, we got an error from Wit.ai, our Magic Human Understandinator(tm): ', err.stack || err);
                         }) 
                     } else {
                         console.log('recieved event', JSON.stringify(event));
