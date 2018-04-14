@@ -106,9 +106,11 @@ analyzeEntities = (sender, res) => {
     //if wit only detected one intent
     if (entities.intent.length === 1) {
         if (entities.intent[0].value === "scheduleConsultation") {
-            if (entities.subject.length <= 1) {
+            if (entities.subject.length > 1) {
                 //error, should be one subject only
                 sendMessage(sender, { text: 'Oh no! Only one subject per request please! I always pretend I\'m good at multitasking but in reality, I\'m really bad at it!' });
+            } else if (entities.subject.length < 1) {
+                sendMessage(sender, { text: 'Please include a subject in your request.'})
             } else {
                 sendMessage(sender, { text: 'Okay! I\'m on it!'})
             }
