@@ -8,7 +8,7 @@ let log = require('node-wit').log;
 let db = mongoose.connect(process.env.MONGODB_URI);
 let Student = require('../models/students');
 
-let { isTyping, sendMessage } = require('./exports/common');
+let { isTyping, sendMessage } = require('./common');
 
 checkID = (userID) => {
     Student.findOne({ _id: userID }, (err, student) => {
