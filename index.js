@@ -1,12 +1,15 @@
-var express = require("express");
-var request = require("request-promise");
-var bodyParser = require("body-parser");
-var mongoose = require('mongoose');
-var Wit = require('node-wit').Wit;
-var log = require('node-wit').log;
+let express = require("express");
+let request = require("request-promise");
+let bodyParser = require("body-parser");
+let mongoose = require('mongoose');
+let Wit = require('node-wit').Wit;
+let log = require('node-wit').log;
 
-var db = mongoose.connect(process.env.MONGODB_URI);
-var Student = require('./models/students');
+let db = mongoose.connect(process.env.MONGODB_URI);
+let Student = require('./models/students');
+
+let { isTyping, sendMessage } = require('./exports/common');
+let { checkID } = require('./exports/signup');
 
 const WIT_TOKEN = process.env.WIT_TOKEN;
 const FB_PAGE_TOKEN = process.env.FB_PAGE_TOKEN;
@@ -33,7 +36,7 @@ const wit = new Wit({
     logger: new log.Logger(log.INFO)
 });
 
-var app = express();
+let app = express();
 app.use(bodyParser.urlencoded({
     extended: false
 }));
@@ -41,13 +44,13 @@ app.use(bodyParser.json());
 app.listen((process.env.PORT || 5000));
 
 // Server index page
-app.get("/", function (req, res) {
+app.get("/", (req, res) => {
     res.send("Deployed!");
 });
 
 // Facebook Webhook
 // Used for verification
-app.get("/webhook", function (req, res) {
+app.get("/webhook", (req, res) => {
     if (req.query["hub.verify_token"] === process.env.VERIFICATION_TOKEN) {
         console.log("Verified webhook");
         res.status(200).send(req.query["hub.challenge"]);
@@ -58,14 +61,14 @@ app.get("/webhook", function (req, res) {
 });
 
 // All callbacks for Messenger will be POST-ed here
-app.post("/webhook", function (req, res) {
+app.post("/webhook", (req, res) => {
     // Make sure this is a page subscription
     if (req.body.object == "page") {
         // Iterate over each entry
         // There may be multiple entries if batched
-        req.body.entry.forEach(function (entry) {
+        req.body.entry.forEach((entry) => {
             // Iterate over each messaging event
-            entry.messaging.forEach(function (event) {
+            entry.messaging.forEach((event) => {
                 if (event.postback) {
                     processPostback(event);
                 } else if (event.message && !event.message.is_echo) {
@@ -77,11 +80,15 @@ app.post("/webhook", function (req, res) {
                             .catch(console.error);
                     } else if (text) {
                         wit.message(text).then((entities) => {
-                            console.log(JSON.stringify(entities));
-                            sendMessage(sender, { text: `We've recieved your message: ${text}.` })
+                            analyzeEntities(entities);
+                            // console.log(JSON.stringify(entities));
+                            // sendMessage(sender, { text: `We've recieved your message: ${text}.` })
                         })
                             .catch((err) => {
-                                console.log('Oops, we got an error from Wit.ai, our Magic Human Understandinator(tm): ', err.stack || err);
+                                sendMessage(sender, {
+                                        text: 'Oops, we got an error from Wit.ai, our magic Human Understandinator(tm). Please try again.'
+                                    }).catch(console.error);
+                                console.log(err.stack || err);
                         }) 
                     } else {
                         console.log('recieved event', JSON.stringify(event));
@@ -94,101 +101,11 @@ app.post("/webhook", function (req, res) {
     }
 });
 
-function processPostback(event) {
-    var senderId = event.sender.id;
-    var payload = event.postback.payload;
+processPostback = (event) => {
+    let senderId = event.sender.id;
+    let payload = event.postback.payload;
 
     if (payload === "Greeting") {
         checkID(senderId);
     }
-}
-
-// sends message to user
-function sendMessage(recipientId, message) {
-    return request({
-        url: "https://graph.facebook.com/v2.6/me/messages",
-        qs: {
-            access_token: process.env.PAGE_ACCESS_TOKEN
-        },
-        method: "POST",
-        json: {
-            recipient: {
-                id: recipientId
-            },
-            message: message,
-        }
-    });
-}
-
-function isTyping(recipientId, isTyping) {
-    let typing = isTyping ? "typing_on" : "typing_off";
-    request({
-        url: "https://graph.facebook.com/v2.6/me/messages",
-        qs: {
-            access_token: process.env.PAGE_ACCESS_TOKEN
-        },
-        method: "POST",
-        json: {
-            recipient: {
-                id: recipientId
-            },
-            sender_action: typing,
-        }
-    }, function (error, response, body) {
-        if (error) {
-            console.log("Error sending message: " + response.error);
-        }
-    });
-}
-
-function checkID(userID) {
-    Student.findOne({ _id: userID }, function (err, student) {
-        if (err) {
-            sendMessage(userID, { text: "Something went wrong. Please delete this conversation and try again!" });
-        } else if (!student) {
-            sendMessage(userID, { text: "It seems that you are not registered yet." }).then(() => {
-                sendMessage(userID, { text: "Registering your account, please wait..." }).then(() => {
-                    isTyping(userID, true);
-                    request({
-                        url: "https://graph.facebook.com/v2.6/" + userID,
-                        qs: {
-                            access_token: process.env.PAGE_ACCESS_TOKEN,
-                            fields: "first_name, last_name, profile_pic, gender"
-                        },
-                        method: "GET"
-                    }, function (error, response, body) {
-                        var greeting = "";
-                        if (error) {
-                            isTyping(userID, false);
-                            sendMessage(userID, { text: "A request error has occurred. Please delete this conversation and try again!" });
-                        } else {
-                            var bodyObj = JSON.parse(body);
-
-                            let data = {
-                                "_id": userID,
-                                "given_name": bodyObj.first_name,
-                                "family_name": bodyObj.last_name,
-                                "profile_pic": bodyObj.profile_pic,
-                                "gender": bodyObj.gender,
-                                "createdAt": new Date(),
-                                "roles": ['student'],
-                            };
-
-                            Student.create(data, function (err, results) {
-                                if (err) {
-                                    isTyping(userID, false);
-                                    sendMessage(userID, { text: "A request error has occurred. Please delete this conversation and try again!" });
-                                } else {
-                                    isTyping(userID, false);
-                                    sendMessage(userID, { text: `Sign up successful! You are now signed in, ${bodyObj.first_name}!` });
-                                }
-                            })
-                        }
-                    });
-                })
-            })
-        } else if (student) {
-            sendMessage(userID, { text: `Welcome back, ${student.given_name}!` });
-        }
-    });
 }
