@@ -1,6 +1,4 @@
-"use strict";
-
-import * as request from 'request-promise';
+let request = require('request-promise');
 
 // sends message to user
 sendMessage = (recipientId, message) => {
@@ -40,5 +38,7 @@ isTyping = (recipientId, isTyping) => {
     });
 }
 
-export const sendMessage = sendMessage;
-export const isTyping = isTyping;
+module.exports = {
+    sendMessage: sendMessage,
+    isTyping: isTyping,
+}

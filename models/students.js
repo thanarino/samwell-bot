@@ -1,6 +1,4 @@
-"use strict";
-
-import mongoose from 'mongoose';
+let mongoose = require('mongoose');
 let Schema = mongoose.Schema;
 
 let studentSchema = new Schema({
@@ -13,4 +11,4 @@ let studentSchema = new Schema({
     roles: { type: [String] },
 });
 
-export default mongoose.model("Student", studentSchema, 'users');
+module.exports = mongoose.model("Student", studentSchema, 'users');

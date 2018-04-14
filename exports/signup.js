@@ -1,15 +1,14 @@
-"use strict";
-
-import * as express from "express";
-import * as request from 'request-promise';
-import * as bodyParser from 'body-parser';
-import mongoose from 'mongoose';
-import { Wit, log } from 'node-wit';
+let express = require("express");
+let request = require("request-promise");
+let bodyParser = require("body-parser");
+let mongoose = require('mongoose');
+let Wit = require('node-wit').Wit;
+let log = require('node-wit').log;
 
 let db = mongoose.connect(process.env.MONGODB_URI);
-import { Student } from '../models/students';
+let Student = require('../models/students');
 
-import { isTyping, sendMessage } from './common';
+let { isTyping, sendMessage } = require('./exports/common');
 
 checkID = (userID) => {
     Student.findOne({ _id: userID }, (err, student) => {
