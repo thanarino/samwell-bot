@@ -2,8 +2,8 @@ var express = require("express");
 var request = require("request-promise");
 var bodyParser = require("body-parser");
 var mongoose = require('mongoose');
-var Wit = require('node-wit');
-var log = require('node-wit');
+var Wit = require('node-wit').Wit;
+var log = require('node-wit').log;
 
 var db = mongoose.connect(process.env.MONGODB_URI);
 var Student = require('./models/students');
