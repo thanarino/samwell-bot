@@ -123,6 +123,7 @@ analyzeEntities = (sender, res, input) => {
             build.dialog({ type: 'text', content: input }, { conversationId: Math.floor((Math.random() * 1000000) + 1) })
                 .then(res => {
                     console.log(res)
+                    sendMessage(sender, res.messages);
                 })
                 .catch(err => console.error('Something went wrong', err));
             // client.request.converseText(input, { conversationToken: sender }).then((res) => {
