@@ -80,7 +80,7 @@ app.post("/webhook", (req, res) => {
                             .catch(console.error);
                     } else if (text) {
                         client.request.analyseText(text).then((res) => {
-                            analyzeEntities(sender, res);
+                            analyzeEntities(sender, res, req);
                         })
                         // wit.message(text).then((res) => {
                         //     analyzeEntities(sender, res);
@@ -104,7 +104,7 @@ app.post("/webhook", (req, res) => {
     }
 });
 
-analyzeEntities = (sender, res) => {
+analyzeEntities = (sender, res, req) => {
     //if wit only detected one intent
     if (res.intents.length === 1) {
         if (res.intents[0].slug === "addconsultation") {
@@ -117,10 +117,35 @@ analyzeEntities = (sender, res) => {
             } else if (res.entities.subject.length == 1) {
                 sendMessage(sender, { text: 'Okay! I\'m on it!' })
             }
-        } else if (res.intent[0].slug === "addClass") {
-            
+        } else if (res.intents[0].slug === "addClass") {
+            client.connect.handleMessage(req, res, onMessage)
         }
     }
+}
+
+onMessage = (message) => {
+    // Get the content of the message
+    var content = message.content
+    // Get the type of the message
+    var type = message.type
+    // Get the senderId, which we'll use as a conversation token.
+    var conversationToken = message.senderId
+
+    // If it's a text message...
+    if (type === 'text') {
+        // ...make a request to Recast.AI to get the bot reply...
+        client.request.converseText(content, { conversationToken: conversationToken })
+            .then(function (res) {
+                // ...extract the reply...
+                var reply = res.reply()
+
+                // ...and send it back to the channel
+                message.addReply([{ type: 'text', content: reply }])
+                message.reply()
+                    .then(res => console.log('message sent'))
+            })
+    }
+
 }
 
 processPostback = (event) => {
