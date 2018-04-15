@@ -78,16 +78,16 @@ app.post("/webhook", (req, res) => {
                         sendMessage(sender, { text: 'Sorry, I can only understand text messages for now.' })
                             .catch(console.error);
                     } else if (text) {
-                        client.connect.handleMessage(req, res, onMessage)
-                        // client.request.analyseText(text).then((res) => {
-                        //     analyzeEntities(sender, res, req);
-                        // })
-                        //     .catch((err) => {
-                        //         sendMessage(sender, {
-                        //                 text: 'Oops, we got an error from Recast.ai, our magic Human Understandinator(tm). Please try again.'
-                        //             }).catch(console.error);
-                        //         console.log(err.stack || err);
-                        // }) 
+                        // client.connect.handleMessage(req, res, onMessage)
+                        client.request.analyseText(text).then((res) => {
+                            analyzeEntities(sender, res);
+                        })
+                            .catch((err) => {
+                                sendMessage(sender, {
+                                        text: 'Oops, we got an error from Recast.ai, our magic Human Understandinator(tm). Please try again.'
+                                    }).catch(console.error);
+                                console.log(err.stack || err);
+                        }) 
                     } else {
                         console.log('recieved event', JSON.stringify(event));
                     }
@@ -99,7 +99,7 @@ app.post("/webhook", (req, res) => {
     }
 });
 
-analyzeEntities = (sender, res, req) => {
+analyzeEntities = (sender, res) => {
     //if wit only detected one intent
     if (res.intents.length === 1) {
         if (res.intents[0].slug === "addconsultation") {
@@ -116,7 +116,6 @@ analyzeEntities = (sender, res, req) => {
                 })
             }
         } else if (res.intents[0].slug === "addClass") {
-            client.connect.handleMessage(req, res, onMessage)
         }
     }
 }
