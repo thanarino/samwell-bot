@@ -133,7 +133,7 @@ onMessage = (message) => {
             .then(function (res) {
                 // ...extract the reply...
                 var reply = res.reply()
-
+                console.log(reply);
                 // ...and send it back to the channel
                 message.addReply([{ type: 'text', content: reply }])
                 message.reply()
