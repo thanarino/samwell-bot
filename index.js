@@ -122,10 +122,12 @@ analyzeEntities = (sender, res, input) => {
         } else if (res.intents[0].slug === "addclass") {
             build.dialog({ type: 'text', content: input }, { conversationId: Math.floor((Math.random() * 1000000) + 1) })
                 .then(res => {
-                    console.log(res)
-                    sendMessage(sender, res.messages);
+                    sendMessage(sender, res.messages[0]);
                 })
-                .catch(err => console.error('Something went wrong', err));
+                .catch((err) => {
+                    sendMessage(sender, {
+                        text: 'Oops, we got an error from Recast.ai, our magic Human Understandinator(tm). Please try again.'
+                    }).catch(console.error);
             // client.request.converseText(input, { conversationToken: sender }).then((res) => {
             //     console.log(res);
             //     sendMessage(sender, { text: res.reply() });
