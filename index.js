@@ -120,7 +120,7 @@ analyzeEntities = (sender, res, input) => {
             }
         } else if (res.intents[0].slug === "addclass") {
             client.request.converseText(input, { conversationToken: sender }).then((res) => {
-                console.log(res.replies);
+                console.log(res);
                 sendMessage(sender, { text: res.replies });
             })
         }
