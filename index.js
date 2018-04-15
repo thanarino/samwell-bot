@@ -2,7 +2,7 @@ let express = require("express");
 let request = require("request-promise");
 let bodyParser = require("body-parser");
 let mongoose = require('mongoose');
-let recastai = require('recastai').default;
+let recastai = require('recastai');
 
 let db = mongoose.connect(process.env.MONGODB_URI);
 let Student = require('./models/students');
@@ -36,8 +36,6 @@ const findOrCreateSession = (fbid) => {
 //     accessToken: WIT_TOKEN,
 //     logger: new log.Logger(log.INFO)
 // });
-
-const bot = require('./bot');
 
 let app = express();
 app.use(bodyParser.urlencoded({
