@@ -111,6 +111,9 @@ analyzeEntities = (sender, res, req) => {
                 sendMessage(sender, { text: 'Oh no! Only one subject per request please! I always pretend I\'m good at multitasking but in reality, I\'m really bad at it!' });
             } else if (res.entities.subject.length == 1) {
                 sendMessage(sender, { text: 'Okay! I\'m on it!' })
+                client.request.converseText(text, { conversationToken: sender }).then((res) => {
+                    sendMessage(sender, { text: res.reply() });
+                })
             }
         } else if (res.intents[0].slug === "addClass") {
             client.connect.handleMessage(req, res, onMessage)
