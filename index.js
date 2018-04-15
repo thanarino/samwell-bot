@@ -114,7 +114,8 @@ analyzeEntities = (sender, res, input) => {
                 console.log(input);
                 console.log(res);
                 client.request.converseText(input, { conversationToken: sender }).then((res) => {
-                    sendMessage(sender, { text: res.reply() });
+                    console.log(res.replies);
+                    sendMessage(sender, { text: res.replies });
                 })
             }
         } else if (res.intents[0].slug === "addClass") {
