@@ -38,9 +38,7 @@ const findOrCreateSession = (fbid) => {
 // });
 
 let app = express();
-app.use(bodyParser.urlencoded({
-    extended: false
-}));
+app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 app.listen((process.env.PORT || 5000));
 
@@ -63,7 +61,6 @@ app.get("/webhook", (req, res) => {
 
 // All callbacks for Messenger will be POST-ed here
 app.post("/webhook", (req, res) => {
-    console.log(req.body.object);
     // Make sure this is a page subscription
     if (req.body.object == "page") {
         // Iterate over each entry
@@ -108,20 +105,19 @@ app.post("/webhook", (req, res) => {
 });
 
 analyzeEntities = (sender, res) => {
-    const entities = res.entities;
     //if wit only detected one intent
-    if (entities.intent.length === 1) {
-        if (entities.intent[0].value === "scheduleConsultation") {
-            if (!entities.subject) {
+    if (res.intents.length === 1) {
+        if (res.intents[0].slug === "addconsultation") {
+            if (!res.entities.subject) {
                 //if there is no subject in the user request
                 sendMessage(sender, { text: 'Please include a subject in your request.' })
-            } else if (entities.subject.length > 1) {
+            } else if (res.entities.subject.length > 1) {
                 //error, should be one subject only
                 sendMessage(sender, { text: 'Oh no! Only one subject per request please! I always pretend I\'m good at multitasking but in reality, I\'m really bad at it!' });
-            } else if (entities.subject.length == 1) {
+            } else if (res.entities.subject.length == 1) {
                 sendMessage(sender, { text: 'Okay! I\'m on it!' })
             }
-        } else if (entities.intent[0].value === "addClass") {
+        } else if (res.intent[0].value === "addClass") {
             
         }
     }
