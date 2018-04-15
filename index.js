@@ -122,7 +122,9 @@ analyzeEntities = (sender, res, input) => {
             client.request.converseText(input, { conversationToken: sender }).then((res) => {
                 console.log(res);
                 sendMessage(sender, { text: res.reply() });
-            })
+            }).catch((err) => {
+                console.log(err);
+            }) 
         }
     }
 }
