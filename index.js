@@ -71,6 +71,7 @@ app.post("/webhook", (req, res) => {
             // Iterate over each messaging event
             entry.messaging.forEach((event) => {
                 if (event.postback) {
+                    console.log('went here');
                     processPostback(event);
                 } else if (event.message && !event.message.is_echo) {
                     const sender = event.sender.id;
