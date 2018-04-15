@@ -80,7 +80,7 @@ app.post("/webhook", (req, res) => {
                     } else if (text) {
                         // client.connect.handleMessage(req, res, onMessage)
                         client.request.analyseText(text).then((res) => {
-                            analyzeEntities(sender, res);
+                            analyzeEntities(sender, res, text);
                         })
                             .catch((err) => {
                                 sendMessage(sender, {
@@ -99,7 +99,7 @@ app.post("/webhook", (req, res) => {
     }
 });
 
-analyzeEntities = (sender, res) => {
+analyzeEntities = (sender, res, input) => {
     //if wit only detected one intent
     if (res.intents.length === 1) {
         if (res.intents[0].slug === "addconsultation") {
@@ -111,7 +111,7 @@ analyzeEntities = (sender, res) => {
                 sendMessage(sender, { text: 'Oh no! Only one subject per request please! I always pretend I\'m good at multitasking but in reality, I\'m really bad at it!' });
             } else if (res.entities.subject.length == 1) {
                 sendMessage(sender, { text: 'Okay! I\'m on it!' })
-                client.request.converseText(text, { conversationToken: sender }).then((res) => {
+                client.request.converseText(input, { conversationToken: sender }).then((res) => {
                     sendMessage(sender, { text: res.reply() });
                 })
             }
