@@ -111,6 +111,8 @@ analyzeEntities = (sender, res, input) => {
                 sendMessage(sender, { text: 'Oh no! Only one subject per request please! I always pretend I\'m good at multitasking but in reality, I\'m really bad at it!' });
             } else if (res.entities.subject.length == 1) {
                 sendMessage(sender, { text: 'Okay! I\'m on it!' })
+                console.log(input);
+                console.log(res);
                 client.request.converseText(input, { conversationToken: sender }).then((res) => {
                     sendMessage(sender, { text: res.reply() });
                 })
