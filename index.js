@@ -122,7 +122,7 @@ analyzeEntities = (sender, res, input) => {
         } else if (res.intents[0].slug === "addclass") {
             build.dialog({ type: 'text', content: input }, { conversationId: Math.floor((Math.random() * 1000000) + 1) })
                 .then(res => {
-                    sendMessage(sender, res.messages[0]);
+                    sendMessage(sender, { text: res.messages[0].content });
                 })
                 .catch((err) => {
                     sendMessage(sender, {
