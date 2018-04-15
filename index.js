@@ -2,12 +2,12 @@ let express = require("express");
 let request = require("request-promise");
 let bodyParser = require("body-parser");
 let mongoose = require('mongoose');
-let recastai = require('recastai');
+let recastai = require('recastai').default;
 
 let db = mongoose.connect(process.env.MONGODB_URI);
 let Student = require('./models/students');
 
-const client = recastai.request(process.env.REQUEST_TOKEN, 'en');
+const client = new recastai.request(process.env.REQUEST_TOKEN, 'en');
 
 let { isTyping, sendMessage } = require('./exports/common');
 let { checkID } = require('./exports/signup');
