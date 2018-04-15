@@ -128,6 +128,8 @@ analyzeEntities = (sender, res, input) => {
                     sendMessage(sender, {
                         text: 'Oops, we got an error from Recast.ai, our magic Human Understandinator(tm). Please try again.'
                     }).catch(console.error);
+                    console.log(err.stack || err);
+                })
             // client.request.converseText(input, { conversationToken: sender }).then((res) => {
             //     console.log(res);
             //     sendMessage(sender, { text: res.reply() });
