@@ -7,7 +7,7 @@ let recastai = require('recastai').default;
 let db = mongoose.connect(process.env.MONGODB_URI);
 let Student = require('./models/students');
 
-const client = new recastai.request(process.env.REQUEST_TOKEN, 'en');
+const client = new recastai(process.env.REQUEST_TOKEN);
 
 let { isTyping, sendMessage } = require('./exports/common');
 let { checkID } = require('./exports/signup');
@@ -79,7 +79,7 @@ app.post("/webhook", (req, res) => {
                         sendMessage(sender, { text: 'Sorry, I can only understand text messages for now.' })
                             .catch(console.error);
                     } else if (text) {
-                        client.analyseText(text).then((res) => {
+                        client.request.analyseText(text).then((res) => {
                             analyzeEntities(sender, res);
                         })
                         // wit.message(text).then((res) => {
@@ -117,7 +117,7 @@ analyzeEntities = (sender, res) => {
             } else if (res.entities.subject.length == 1) {
                 sendMessage(sender, { text: 'Okay! I\'m on it!' })
             }
-        } else if (res.intent[0].value === "addClass") {
+        } else if (res.intent[0].slug === "addClass") {
             
         }
     }
