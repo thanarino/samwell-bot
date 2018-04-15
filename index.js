@@ -69,7 +69,6 @@ app.post("/webhook", (req, res) => {
             // Iterate over each messaging event
             entry.messaging.forEach((event) => {
                 if (event.postback) {
-                    console.log('went here');
                     processPostback(event);
                 } else if (event.message && !event.message.is_echo) {
                     const sender = event.sender.id;
@@ -79,20 +78,16 @@ app.post("/webhook", (req, res) => {
                         sendMessage(sender, { text: 'Sorry, I can only understand text messages for now.' })
                             .catch(console.error);
                     } else if (text) {
-                        client.request.analyseText(text).then((res) => {
-                            analyzeEntities(sender, res, req);
-                        })
-                        // wit.message(text).then((res) => {
-                        //     analyzeEntities(sender, res);
-                        //     // console.log(JSON.stringify(entities));
-                        //     // sendMessage(sender, { text: `We've recieved your message: ${text}.` })
+                        client.connect.handleMessage(req, res, onMessage)
+                        // client.request.analyseText(text).then((res) => {
+                        //     analyzeEntities(sender, res, req);
                         // })
-                            .catch((err) => {
-                                sendMessage(sender, {
-                                        text: 'Oops, we got an error from Recast.ai, our magic Human Understandinator(tm). Please try again.'
-                                    }).catch(console.error);
-                                console.log(err.stack || err);
-                        }) 
+                        //     .catch((err) => {
+                        //         sendMessage(sender, {
+                        //                 text: 'Oops, we got an error from Recast.ai, our magic Human Understandinator(tm). Please try again.'
+                        //             }).catch(console.error);
+                        //         console.log(err.stack || err);
+                        // }) 
                     } else {
                         console.log('recieved event', JSON.stringify(event));
                     }
