@@ -8,6 +8,7 @@ let db = mongoose.connect(process.env.MONGODB_URI);
 let Student = require('./models/students');
 
 const client = new recastai(process.env.REQUEST_TOKEN);
+const build = client.build;
 
 let { isTyping, sendMessage } = require('./exports/common');
 let { checkID } = require('./exports/signup');
@@ -119,12 +120,17 @@ analyzeEntities = (sender, res, input) => {
                 })
             }
         } else if (res.intents[0].slug === "addclass") {
-            client.request.converseText(input, { conversationToken: sender }).then((res) => {
-                console.log(res);
-                sendMessage(sender, { text: res.reply() });
-            }).catch((err) => {
-                console.log(err);
-            }) 
+            build.dialog({ type: 'text', content: input }, { conversationId: Math.floor((Math.random() * 1000000) + 1) })
+                .then(res => {
+                    console.log(res.messages)
+                })
+                .catch(err => console.error('Something went wrong', err));
+            // client.request.converseText(input, { conversationToken: sender }).then((res) => {
+            //     console.log(res);
+            //     sendMessage(sender, { text: res.reply() });
+            // }).catch((err) => {
+            //     console.log(err);
+            // }) 
         }
     }
 }
