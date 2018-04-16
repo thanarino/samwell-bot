@@ -10,7 +10,7 @@ let Student = require('./models/students');
 const client = new recastai(process.env.REQUEST_TOKEN);
 const build = client.build;
 
-let { isTyping, sendMessage } = require('./exports/common');
+let { isTyping, sendMessage, sendQuickReply } = require('./exports/common');
 let { checkID } = require('./exports/signup');
 var conversationID = undefined;
 
@@ -80,7 +80,6 @@ app.post("/webhook", (req, res) => {
                         sendMessage(sender, { text: 'Sorry, I can only understand text messages for now.' })
                             .catch(console.error);
                     } else if (text) {
-                        // client.connect.handleMessage(req, res, onMessage)
                         client.request.analyseText(text).then((res) => {
                             analyzeEntities(sender, res, text);
                         })
@@ -144,7 +143,7 @@ analyzeEntities = (sender, res, input) => {
                 .then(res => {
                     console.log(res.messages[0].content);
                     conversationId = res.conversation.id;
-                    sendMessage(sender, { text: res.messages[0].content });
+                    sendQuickReply(sender, res.messages[0].content);
                 })
                 .catch((err) => {
                     sendMessage(sender, {
@@ -154,31 +153,6 @@ analyzeEntities = (sender, res, input) => {
                 })
         }
     }
-}
-
-onMessage = (message) => {
-    // Get the content of the message
-    var content = message.content
-    // Get the type of the message
-    var type = message.type
-    // Get the senderId, which we'll use as a conversation token.
-    var conversationToken = message.senderId
-
-    // If it's a text message...
-    if (type === 'text') {
-        // ...make a request to Recast.AI to get the bot reply...
-        client.request.converseText(content, { conversationToken: conversationToken })
-            .then(function (res) {
-                // ...extract the reply...
-                var reply = res.reply()
-                console.log(reply);
-                // ...and send it back to the channel
-                message.addReply([{ type: 'text', content: reply }])
-                message.reply()
-                    .then(res => console.log('message sent'))
-            })
-    }
-
 }
 
 processPostback = (event) => {
