@@ -106,6 +106,7 @@ app.post("/verify-class", (req, res) => {
 
 analyzeEntities = (sender, res, input) => {
     //if wit only detected one intent
+    console.log(res);
     if (res.intents.length === 1) {
         if (res.intents[0].slug === "addconsultation") {
             if (!res.entities.subject) {
@@ -136,12 +137,6 @@ analyzeEntities = (sender, res, input) => {
                     }).catch(console.error);
                     console.log(err.stack || err);
                 })
-            // client.request.converseText(input, { conversationToken: sender }).then((res) => {
-            //     console.log(res);
-            //     sendMessage(sender, { text: res.reply() });
-            // }).catch((err) => {
-            //     console.log(err);
-            // }) 
         }
     }
 }
