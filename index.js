@@ -125,7 +125,7 @@ analyzeEntities = (sender, res, input) => {
                 })
             }
         } else if (res.intents[0].slug === "addclass" || res.intents[0].slug === "getsection" || res.intents[0].slug === "getsubject" || res.intents[0].slug === "confirmentry") {
-            let conversationId = conversationId!==undefined ? conversationId : Math.floor((Math.random() * 1000000) + 1)
+            let conversationId = (typeof conversationId === 'undefined') ? Math.floor((Math.random() * 1000000) + 1) : conversationId;
             build.dialog({ type: 'text', content: input }, { conversationId: conversationId })
                 .then(res => {
                     console.log(res);
