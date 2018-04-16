@@ -100,6 +100,10 @@ app.post("/webhook", (req, res) => {
     }
 });
 
+app.post("/verify-class", (req, res) => {
+    console.log(res);
+})
+
 analyzeEntities = (sender, res, input) => {
     //if wit only detected one intent
     if (res.intents.length === 1) {
@@ -120,7 +124,8 @@ analyzeEntities = (sender, res, input) => {
                 })
             }
         } else if (res.intents[0].slug === "addclass") {
-            build.dialog({ type: 'text', content: input }, { conversationId: Math.floor((Math.random() * 1000000) + 1) })
+            const conversationId = Math.floor((Math.random() * 1000000) + 1)
+            build.dialog({ type: 'text', content: input }, { conversationId: conversationId })
                 .then(res => {
                     sendMessage(sender, { text: res.messages[0].content });
                 })
