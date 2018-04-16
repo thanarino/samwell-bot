@@ -125,8 +125,21 @@ analyzeEntities = (sender, res, input) => {
                     sendMessage(sender, { text: res.replies });
                 })
             }
-        } else if (res.intents[0].slug === "addclass" || res.intents[0].slug === "getsection" || res.intents[0].slug === "getsubject" || res.intents[0].slug === "confirmentry") {
+        } else if (res.intents[0].slug === "addclass" || res.intents[0].slug === "confirmentry") {
             conversationId = (typeof conversationId === 'undefined') ? Math.floor((Math.random() * 1000000) + 1) : conversationId;
+            build.dialog({ type: 'text', content: input }, { conversationId: conversationId })
+                .then(res => {
+                    console.log(res.messages[0].content);
+                    conversationId = res.conversation.id;
+                    sendMessage(sender, { text: res.messages[0].content });
+                })
+                .catch((err) => {
+                    sendMessage(sender, {
+                        text: 'Oops, we got an error from Recast.ai, our magic Human Understandinator(tm). Please try again.'
+                    }).catch(console.error);
+                    console.log(err.stack || err);
+                })
+        } else if (res.intents[0].slug === "getsection" || res.intents[0].slug === "getsubject") {
             build.dialog({ type: 'text', content: input }, { conversationId: conversationId })
                 .then(res => {
                     console.log(res);
