@@ -12,6 +12,7 @@ const build = client.build;
 
 let { isTyping, sendMessage } = require('./exports/common');
 let { checkID } = require('./exports/signup');
+var conversationID = undefined;
 
 // const WIT_TOKEN = process.env.WIT_TOKEN;
 const FB_PAGE_TOKEN = process.env.FB_PAGE_TOKEN;
@@ -125,7 +126,7 @@ analyzeEntities = (sender, res, input) => {
                 })
             }
         } else if (res.intents[0].slug === "addclass" || res.intents[0].slug === "getsection" || res.intents[0].slug === "getsubject" || res.intents[0].slug === "confirmentry") {
-            var conversationId = (typeof conversationId === 'undefined') ? Math.floor((Math.random() * 1000000) + 1) : conversationId;
+            conversationId = (typeof conversationId === 'undefined') ? Math.floor((Math.random() * 1000000) + 1) : conversationId;
             build.dialog({ type: 'text', content: input }, { conversationId: conversationId })
                 .then(res => {
                     console.log(res);
