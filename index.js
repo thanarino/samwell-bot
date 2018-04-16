@@ -131,7 +131,12 @@ analyzeEntities = (sender, res, input) => {
                 .then(res => {
                     console.log(res);
                     conversationId = res.conversation.id;
-                    sendMessage(sender, { text: res.messages[0].content });
+                    if (res.messages[0].type === 'quickReplies') {
+                        sendQuickReply(sender, res.messages[0].content);
+                    } else {
+                        sendMessage(sender, { text: res.messages[0].content });
+                    }
+                    
                 })
                 .catch((err) => {
                     sendMessage(sender, {
