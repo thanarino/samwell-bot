@@ -104,7 +104,7 @@ app.post("/verify-class", (req, res) => {
     if (req.body.object == "page") {
         
 
-        console.log(req);
+        console.log(req.body);
 
         res.sendStatus(200);
     }
