@@ -19,14 +19,13 @@ sendMessage = (recipientId, message) => {
 
 // sends message to user
 sendQuickReply = (recipientId, message) => {
-    let temp = [];
-    temp.push(message.buttons.map(button => {
+    let temp = message.buttons.map(button => {
         return {
             "content_type": "text",
             "title": button.title,
             "payload": button.value
         }
-    }));
+    });
     console.log(temp);
     return request({
         url: "https://graph.facebook.com/v2.6/me/messages",
