@@ -101,13 +101,9 @@ app.post("/webhook", (req, res) => {
 });
 
 app.post("/verify-class", (req, res) => {
-    if (req.body.object == "page") {
-        
+    console.log(req.body);
 
-        console.log(req.body);
-
-        res.sendStatus(200);
-    }
+    res.sendStatus(200);
 })
 
 analyzeEntities = (sender, res, input) => {
