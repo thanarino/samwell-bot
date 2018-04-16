@@ -88,6 +88,7 @@ app.post("/webhook", (req, res) => {
                                         text: 'Oops, we got an error from Recast.ai, our magic Human Understandinator(tm). Please try again.'
                                     }).catch(console.error);
                                 console.log(err.stack || err);
+                                conversationID = undefined;
                         }) 
                     } else {
                         console.log('recieved event', JSON.stringify(event));
@@ -112,10 +113,12 @@ analyzeEntities = (sender, res, input) => {
         if (res.intents[0].slug === "addconsultation") {
             if (!res.entities.subject) {
                 //if there is no subject in the user request
-                sendMessage(sender, { text: 'Please include a subject in your request.' })
+                sendMessage(sender, { text: 'Please include a subject in your request.' });
+                conversationID = undefined;
             } else if (res.entities.subject.length > 1) {
                 //error, should be one subject only
                 sendMessage(sender, { text: 'Oh no! Only one subject per request please! I always pretend I\'m good at multitasking but in reality, I\'m really bad at it!' });
+                conversationID = undefined;
             } else if (res.entities.subject.length == 1) {
                 sendMessage(sender, { text: 'Okay! I\'m on it!' })
                 client.request.converseText(input, { conversationToken: sender }).then((res) => {
@@ -135,6 +138,7 @@ analyzeEntities = (sender, res, input) => {
                         text: 'Oops, we got an error from Recast.ai, our magic Human Understandinator(tm). Please try again.'
                     }).catch(console.error);
                     console.log(err.stack || err);
+                    conversationID = undefined;
                 })
         } else if (res.intents[0].slug === "getsection" || res.intents[0].slug === "getsubject") {
             build.dialog({ type: 'text', content: input }, { conversationId: conversationId })
@@ -147,6 +151,7 @@ analyzeEntities = (sender, res, input) => {
                         text: 'Oops, we got an error from Recast.ai, our magic Human Understandinator(tm). Please try again.'
                     }).catch(console.error);
                     console.log(err.stack || err);
+                    conversationID = undefined;
                 })
         }
     }
