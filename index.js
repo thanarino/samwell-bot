@@ -142,7 +142,7 @@ analyzeEntities = (sender, res, input) => {
         } else if (res.intents[0].slug === "getsection" || res.intents[0].slug === "getsubject") {
             build.dialog({ type: 'text', content: input }, { conversationId: conversationId })
                 .then(res => {
-                    console.log(res);
+                    console.log(res.messages[0].content);
                     conversationId = res.conversation.id;
                     sendMessage(sender, { text: res.messages[0].content });
                 })
