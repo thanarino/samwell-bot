@@ -112,7 +112,6 @@ app.post("/verify-class", (req, res) => {
 
 analyzeEntities = (sender, res, input) => {
     //if wit only detected one intent
-    console.log(res);
     if (res.intents.length === 1) {
         if (res.intents[0].slug === "addconsultation") {
             if (!res.entities.subject) {
@@ -131,6 +130,7 @@ analyzeEntities = (sender, res, input) => {
             conversationId = (typeof conversationId === 'undefined') ? Math.floor((Math.random() * 1000000) + 1) : conversationId;
             build.dialog({ type: 'text', content: input }, { conversationId: conversationId })
                 .then(res => {
+                    console.log(res);
                     conversationId = res.conversation.id;
                     sendMessage(sender, { text: res.messages[0].content });
                 })
