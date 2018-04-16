@@ -101,7 +101,7 @@ app.post("/webhook", (req, res) => {
 });
 
 app.post("/verify-class", (req, res) => {
-    console.log(res);
+    console.log(req.body);
 })
 
 analyzeEntities = (sender, res, input) => {
