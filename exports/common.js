@@ -69,4 +69,5 @@ isTyping = (recipientId, isTyping) => {
 module.exports = {
     sendMessage: sendMessage,
     isTyping: isTyping,
+    sendQuickReply: sendQuickReply,
 }
