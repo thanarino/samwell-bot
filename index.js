@@ -127,6 +127,7 @@ analyzeEntities = (sender, res, input) => {
             const conversationId = Math.floor((Math.random() * 1000000) + 1)
             build.dialog({ type: 'text', content: input }, { conversationId: conversationId })
                 .then(res => {
+                    console.log(res);
                     sendMessage(sender, { text: res.messages[0].content });
                 })
                 .catch((err) => {
