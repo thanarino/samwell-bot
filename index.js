@@ -123,10 +123,7 @@ analyzeEntities = (sender, res, input) => {
                 sendMessage(sender, { text: 'Oh no! Only one subject per request please! I always pretend I\'m good at multitasking but in reality, I\'m really bad at it!' });
             } else if (res.entities.subject.length == 1) {
                 sendMessage(sender, { text: 'Okay! I\'m on it!' })
-                console.log(input);
-                console.log(res);
                 client.request.converseText(input, { conversationToken: sender }).then((res) => {
-                    console.log(res);
                     sendMessage(sender, { text: res.replies });
                 })
             }
@@ -134,7 +131,6 @@ analyzeEntities = (sender, res, input) => {
             conversationId = (typeof conversationId === 'undefined') ? Math.floor((Math.random() * 1000000) + 1) : conversationId;
             build.dialog({ type: 'text', content: input }, { conversationId: conversationId })
                 .then(res => {
-                    console.log(res.messages[0].content);
                     conversationId = res.conversation.id;
                     sendMessage(sender, { text: res.messages[0].content });
                 })
@@ -147,7 +143,6 @@ analyzeEntities = (sender, res, input) => {
         } else if (res.intents[0].slug === "getsection" || res.intents[0].slug === "getsubject") {
             build.dialog({ type: 'text', content: input }, { conversationId: conversationId })
                 .then(res => {
-                    console.log(res.messages[0].content);
                     conversationId = res.conversation.id;
                     sendQuickReply(sender, res.messages[0].content);
                 })

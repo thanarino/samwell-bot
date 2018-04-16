@@ -26,7 +26,6 @@ sendQuickReply = (recipientId, message) => {
             "payload": button.value
         }
     });
-    console.log(temp);
     return request({
         url: "https://graph.facebook.com/v2.6/me/messages",
         qs: {
