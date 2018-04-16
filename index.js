@@ -124,11 +124,12 @@ analyzeEntities = (sender, res, input) => {
                     sendMessage(sender, { text: res.replies });
                 })
             }
-        } else if (res.intents[0].slug === "addclass") {
-            const conversationId = Math.floor((Math.random() * 1000000) + 1)
+        } else if (res.intents[0].slug === "addclass" || res.intents[0].slug === "getsection" || res.intents[0].slug === "getsubject" || res.intents[0].slug === "confirmentry") {
+            let conversationId = conversationId || Math.floor((Math.random() * 1000000) + 1)
             build.dialog({ type: 'text', content: input }, { conversationId: conversationId })
                 .then(res => {
                     console.log(res);
+                    conversationId = res.conversation.id;
                     sendMessage(sender, { text: res.messages[0].content });
                 })
                 .catch((err) => {
