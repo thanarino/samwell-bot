@@ -119,9 +119,9 @@ app.post("/verify-class", (req, res) => {
             let toSend = Object.assign({}, {
                 replies: [{
                     type: 'text',
-                    content:'Found it!'
+                    content: 'Found it!'
                 }],
-            }, Object.assign({}, recieved.conversation.memory, { code: { raw: obj.code, value: obj.code } }))
+            }, { conversation: { memory: Object.assign({}, recieved.conversation.memory, { code: { raw: obj.code, value: obj.code } }) } });
             console.log(toSend);
             res.send(toSend);
         } else {
