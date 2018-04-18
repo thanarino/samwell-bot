@@ -176,6 +176,7 @@ processPostback = (event) => {
     let payload = event.postback.payload;
 
     if (payload === "Greeting") {
+        conversationID = Math.floor((Math.random() * 1000000) + 1);
         checkID(senderId);
     }
 }
