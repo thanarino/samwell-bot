@@ -105,13 +105,19 @@ app.post("/webhook", (req, res) => {
 app.post("/verify-class", (req, res) => {
     let recieved = req.body;
 
+    console.log(recieved);
+
     let section = recieved.conversation.memory.section.value.toUpperCase().replace(/ /g,'');
     let subject = recieved.conversation.memory.subject.value.toUpperCase().replace(/ /g,'');
 
     let found = Section.findOne({ sectionName: section, subject: subject }, function (err, obj) {
         console.log(obj);
+        if (obj) {
+            
+        } else {
+
+        }
     });
-    console.log(found);
 
     res.sendStatus(200);
 })
