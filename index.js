@@ -6,6 +6,7 @@ let recastai = require('recastai').default;
 
 let db = mongoose.connect(process.env.MONGODB_URI);
 let Student = require('./models/students');
+let Section = require('./models/sections');
 
 const client = new recastai(process.env.REQUEST_TOKEN);
 const build = client.build;
@@ -102,7 +103,10 @@ app.post("/webhook", (req, res) => {
 });
 
 app.post("/verify-class", (req, res) => {
-    console.log(req.body);
+    let recieved = req.body;
+
+    console.log(recieved.conversation.memory.section);
+    console.log(recieved.conversation.memory.subject);
 
     res.sendStatus(200);
 })
