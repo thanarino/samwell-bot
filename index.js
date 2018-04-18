@@ -105,7 +105,7 @@ app.post("/webhook", (req, res) => {
 app.post("/verify-class", (req, res) => {
     let recieved = req.body;
 
-    console.log(recieved);
+    console.log(recievedconversation.memory.section);
 
     let section = recieved.conversation.memory.section.value.toUpperCase().replace(/ /g,'');
     let subject = recieved.conversation.memory.subject.value.toUpperCase().replace(/ /g,'');
@@ -113,13 +113,18 @@ app.post("/verify-class", (req, res) => {
     let found = Section.findOne({ sectionName: section, subject: subject }, function (err, obj) {
         console.log(obj);
         if (obj) {
-            
+            let toSend = Object.assign({}, {
+                replies: [{
+                    type: 'text',
+                    content:'Found it!'
+                }],
+            }, Object.assign({}, recieved.conversation.memory, { code: { raw: obj.code, value: obj.code } }))
+            console.log(toSend);
+            res.send(toSend);
         } else {
 
         }
     });
-
-    res.sendStatus(200);
 })
 
 analyzeEntities = (sender, res, input) => {
