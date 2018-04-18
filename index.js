@@ -102,7 +102,7 @@ app.post("/webhook", (req, res) => {
 });
 
 app.post("/verify-class", (req, res) => {
-    console.log(req.body);
+    console.log("went into this route yey");
 
     res.sendStatus(200);
 })
