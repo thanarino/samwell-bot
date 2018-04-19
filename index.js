@@ -105,13 +105,8 @@ app.post("/webhook", (req, res) => {
 app.post("/verify-class", (req, res) => {
     let recieved = req.body;
 
-    console.log(recieved.conversation.memory.section);
-
     let section = recieved.conversation.memory.section.value.toUpperCase().replace(/ /g,'');
     let subject = recieved.conversation.memory.subject.value.toUpperCase().replace(/ /g, '');
-    
-    console.log(section)
-    console.log(subject)
 
     let found = Section.findOne({ sectionName: section, subject: subject }, function (err, obj) {
         console.log(obj);
@@ -122,10 +117,15 @@ app.post("/verify-class", (req, res) => {
                     content: 'Found it!'
                 }],
             }, { conversation: { memory: Object.assign({}, recieved.conversation.memory, { code: { raw: obj.code, value: obj.code } }) } });
-            console.log(toSend);
             res.send(toSend);
         } else {
-            console.log("not found");
+            let toSend = Object.assign({}, {
+                replies: [{
+                    type: 'text',
+                    content: "I can't seem to find the class. Can you repeat your request?"
+                }],
+            }, { conversation: { memory: {}} });
+            res.send(toSend);
         }
     });
 })
