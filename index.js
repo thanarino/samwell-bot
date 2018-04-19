@@ -14,6 +14,7 @@ const build = client.build;
 let { isTyping, sendMessage, sendQuickReply } = require('./exports/common');
 let { checkID } = require('./exports/signup');
 var conversationID = undefined;
+var sender = undefined;
 
 // const WIT_TOKEN = process.env.WIT_TOKEN;
 const FB_PAGE_TOKEN = process.env.FB_PAGE_TOKEN;
@@ -74,7 +75,7 @@ app.post("/webhook", (req, res) => {
                 if (event.postback) {
                     processPostback(event);
                 } else if (event.message && !event.message.is_echo) {
-                    const sender = event.sender.id;
+                    sender = (typeof conversationId === 'undefined') ? event.sender.id : sender;
                     const { text, attachments } = event.message;
 
                     if (attachments) {
@@ -103,8 +104,6 @@ app.post("/webhook", (req, res) => {
 });
 
 app.post("/verify-class", (req, res) => {
-    console.log(req);
-
     let recieved = req.body;
 
     let section = recieved.conversation.memory.section.value.toUpperCase().replace(/ /g,'');
@@ -138,6 +137,9 @@ app.post("/verify-class", (req, res) => {
 
 app.post("/verify-code", (req, res) => {
     let recieved = req.body;
+
+    console.log('here');
+    console.log(sender);
 
     let section = recieved.conversation.memory.section.value.toUpperCase().replace(/ /g, '');
     let subject = recieved.conversation.memory.subject.value.toUpperCase().replace(/ /g, '');
