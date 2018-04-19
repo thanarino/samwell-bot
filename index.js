@@ -116,7 +116,11 @@ app.post("/verify-class", (req, res) => {
                 replies: [{
                     type: 'text',
                     content: 'Found it!'
-                }],
+                },
+                    {
+                        type: 'text',
+                        content: 'Your teacher should have provided a code to enter this section. What is it?'
+                    }],
             }, { conversation: { memory: Object.assign({}, recieved.conversation.memory, { code: { raw: obj.code, value: obj.code } }) } });
             res.send(toSend);
         } else {
