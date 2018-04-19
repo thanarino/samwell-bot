@@ -103,6 +103,8 @@ app.post("/webhook", (req, res) => {
 });
 
 app.post("/verify-class", (req, res) => {
+    console.log(req);
+
     let recieved = req.body;
 
     let section = recieved.conversation.memory.section.value.toUpperCase().replace(/ /g,'');
@@ -115,7 +117,11 @@ app.post("/verify-class", (req, res) => {
                 replies: [{
                     type: 'text',
                     content: 'Found it!'
-                }],
+                },
+                    {
+                        type: 'text',
+                        content: 'Your teacher should have provided a code to enter this section. What is it?'
+                    }],
             }, { conversation: { memory: Object.assign({}, recieved.conversation.memory, { code: { raw: obj.code, value: obj.code } }) } });
             res.send(toSend);
         } else {
@@ -128,7 +134,22 @@ app.post("/verify-class", (req, res) => {
             res.send(toSend);
         }
     });
-})
+});
+
+app.post("/verify-code", (req, res) => {
+    let recieved = req.body;
+
+    let section = recieved.conversation.memory.section.value.toUpperCase().replace(/ /g, '');
+    let subject = recieved.conversation.memory.subject.value.toUpperCase().replace(/ /g, '');
+
+    let code = received.conversation.memory.code.value;
+    let inputCode = received.conversation.memory.inputCode.value;
+
+    if (code === inputCode) {
+        // Section.update({ sectionName: section, subject: subject }, {$push: {studentList: }})
+    }
+
+});
 
 analyzeEntities = (sender, res, input) => {
     //if wit only detected one intent
