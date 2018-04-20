@@ -123,7 +123,7 @@ app.post("/verify-class", (req, res) => {
                     {
                         type: 'text',
                         content: 'Your teacher should have provided a code to enter this section. What is it?'
-                    }],9
+                    }]
             }, { conversation: { memory: Object.assign({}, recieved.conversation.memory, { code: { raw: obj.code, value: obj.code } }) } });
             res.send(toSend);
         } else {
@@ -169,7 +169,7 @@ app.post("/verify-code", (req, res) => {
                         type: 'text',
                         content: 'Hmmm, it seems that something went wrong in enlisting you into the class. Please don\'t break any library doors -- just try again later.'
                     }],
-                }, received.conversation);
+                }, { conversation: { memory: {} } });
                 res.send(toSend);
             }
         })
