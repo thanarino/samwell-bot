@@ -149,6 +149,13 @@ app.post("/verify-code", (req, res) => {
 
     if (code === inputCode) {
         // Section.update({ sectionName: section, subject: subject }, {$push: {studentList: }})
+        let toSend = Object.assign({}, {
+            replies: [{
+                type: 'text',
+                content: 'Code matches!'
+            }],
+        }, received.conversation);
+        res.send(toSend);
     }
 
 });
