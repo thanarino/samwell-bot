@@ -115,17 +115,23 @@ app.post("/verify-class", (req, res) => {
             let toSend = Object.assign({}, {
                 replies: [{
                     type: 'text',
+                    content: 'Okay, verifying...'
+                },{
+                    type: 'text',
                     content: 'Found it!'
                 },
                     {
                         type: 'text',
                         content: 'Your teacher should have provided a code to enter this section. What is it?'
-                    }],
+                    }],9
             }, { conversation: { memory: Object.assign({}, recieved.conversation.memory, { code: { raw: obj.code, value: obj.code } }) } });
             res.send(toSend);
         } else {
             let toSend = Object.assign({}, {
                 replies: [{
+                    type: 'text',
+                    content: 'Okay, verifying...'
+                },{
                     type: 'text',
                     content: "I can't seem to find the class. Can you repeat your request?"
                 }],
@@ -148,14 +154,26 @@ app.post("/verify-code", (req, res) => {
     let inputCode = received.conversation.memory.inputCode.raw;
 
     if (code === inputCode) {
-        // Section.update({ sectionName: section, subject: subject }, {$push: {studentList: }})
-        let toSend = Object.assign({}, {
-            replies: [{
-                type: 'text',
-                content: 'Code matches!'
-            }],
-        }, received.conversation);
-        res.send(toSend);
+        Section.update({ sectionName: section, subject: subject }, { $push: { studentList: sender } }, (err, result) => {
+            if (err) {
+                let toSend = Object.assign({}, {
+                    replies: [{
+                        type: 'text',
+                        content: 'You\'re now in the class! Do you feel like you belong now?'
+                    }],
+                }, received.conversation);
+                res.send(toSend);
+            } else {
+                let toSend = Object.assign({}, {
+                    replies: [{
+                        type: 'text',
+                        content: 'Hmmm, it seems that something went wrong in enlisting you into the class. Please don\'t break any library doors -- just try again later.'
+                    }],
+                }, received.conversation);
+                res.send(toSend);
+            }
+        })
+        
     } else {
         let toSend = Object.assign({}, {
             replies: [{
