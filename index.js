@@ -186,7 +186,7 @@ analyzeEntities = (sender, res, input) => {
                     sendMessage(sender, { text: res.replies });
                 })
             }
-        } else if (res.intents[0].slug === "addclass" || res.intents[0].slug === "confirmentry") {
+        } else if (res.intents[0].slug === "addclass" || res.intents[0].slug === "confirmentry" || res.intents[0].slug === "getcode") {
             conversationId = (typeof conversationId === 'undefined') ? Math.floor((Math.random() * 1000000) + 1) : conversationId;
             build.dialog({ type: 'text', content: input }, { conversationId: conversationId })
                 .then(res => {
