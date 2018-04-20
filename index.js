@@ -144,8 +144,8 @@ app.post("/verify-code", (req, res) => {
     let section = received.conversation.memory.section.value.toUpperCase().replace(/ /g, '');
     let subject = received.conversation.memory.subject.value.toUpperCase().replace(/ /g, '');
 
-    let code = received.conversation.memory.code.value;
-    let inputCode = received.conversation.memory.inputCode.value;
+    let code = received.conversation.memory.code.raw;
+    let inputCode = received.conversation.memory.inputCode.raw;
 
     if (code === inputCode) {
         // Section.update({ sectionName: section, subject: subject }, {$push: {studentList: }})
@@ -153,6 +153,14 @@ app.post("/verify-code", (req, res) => {
             replies: [{
                 type: 'text',
                 content: 'Code matches!'
+            }],
+        }, received.conversation);
+        res.send(toSend);
+    } else {
+        let toSend = Object.assign({}, {
+            replies: [{
+                type: 'text',
+                content: 'Code does not match.'
             }],
         }, received.conversation);
         res.send(toSend);
