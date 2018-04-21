@@ -153,37 +153,75 @@ app.post("/verify-code", (req, res) => {
     let code = received.conversation.memory.code.raw;
     let inputCode = received.conversation.memory.inputCode.raw;
 
-    if (code === inputCode) {
-        Section.update({ sectionName: section, subject: subject }, { $push: { studentList: sender } }, (err, result) => {
-            if (err) {
-                let toSend = Object.assign({}, {
-                    replies: [{
-                        type: 'text',
-                        content: 'You\'re now in the class! Do you feel like you belong now?'
-                    }],
-                }, received.conversation);
-                res.send(toSend);
+    Section.findOne({
+        sectionName: section,
+        subject: subject
+    }, function (err, obj) {
+        if (!obj) {
+            if (code === inputCode) {
+                Section.update({
+                    sectionName: section,
+                    subject: subject
+                }, {
+                        $push: {
+                            studentList: sender
+                        }
+                    }, (err, result) => {
+                        if (err) {
+                            let toSend = Object.assign({}, {
+                                replies: [{
+                                    type: 'text',
+                                    content: 'Hmmm, it seems that something went wrong in enlisting you into the class.'
+                                },
+                                {
+                                    type: 'text',
+                                    content: 'Please don\'t break any library doors -- just try again later.'
+                                }
+                                ],
+                            }, {
+                                    conversation: {
+                                        memory: {}
+                                    }
+                                });
+                            res.send(toSend);
+                        } else {
+                            let toSend = Object.assign({}, {
+                                replies: [{
+                                    type: 'text',
+                                    content: 'You\'re now in the class!'
+                                }, {
+                                    type: 'text',
+                                    content: 'Do you feel like you belong now?'
+                                }],
+                            }, received.conversation);
+                            res.send(toSend);
+                        }
+                    })
+
             } else {
                 let toSend = Object.assign({}, {
                     replies: [{
                         type: 'text',
-                        content: 'Hmmm, it seems that something went wrong in enlisting you into the class. Please don\'t break any library doors -- just try again later.'
+                        content: 'Code does not match.'
                     }],
-                }, { conversation: { memory: {} } });
+                }, received.conversation);
                 res.send(toSend);
             }
-        })
+        } else {
+            let toSend = Object.assign({}, {
+                replies: [{
+                    type: 'text',
+                    content: 'Wha-- You\'re already in the class! Are you okay?'
+                }],
+            }, {
+                conversation: {
+                    memory: {}
+                }
+            });
+            res.send(toSend);
+        }
         
-    } else {
-        let toSend = Object.assign({}, {
-            replies: [{
-                type: 'text',
-                content: 'Code does not match.'
-            }],
-        }, received.conversation);
-        res.send(toSend);
-    }
-
+    })
 });
 
 analyzeEntities = (sender, res, input) => {
