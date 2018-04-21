@@ -13,6 +13,7 @@
     "body-parser": "^1.18.2",
     "botbuilder-wit-remade": "^1.0.1",
     "express": "^4.16.3",
+    "moment": "^2.22.1",
     "mongoose": "^5.0.14",
     "node-wit": "^5.0.0",
     "recastai": "^3.7.0",

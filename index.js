@@ -3,6 +3,7 @@ let request = require("request-promise");
 let bodyParser = require("body-parser");
 let mongoose = require('mongoose');
 let recastai = require('recastai').default;
+let moment = require('moment');
 
 let db = mongoose.connect(process.env.MONGODB_URI);
 let Student = require('./models/students');
@@ -99,10 +100,10 @@ app.post("/webhook", (req, res) => {
 });
 
 app.post("/verify-class", (req, res) => {
-    let recieved = req.body;
+    let received = req.body;
 
-    let section = recieved.conversation.memory.section.value.toUpperCase().replace(/ /g,'');
-    let subject = recieved.conversation.memory.subject.value.toUpperCase().replace(/ /g, '');
+    let section = received.conversation.memory.section.value.toUpperCase().replace(/ /g, '');
+    let subject = received.conversation.memory.subject.value.toUpperCase().replace(/ /g, '');
 
     let found = Section.findOne({ sectionName: section, subject: subject }, function (err, obj) {
         console.log(obj);
@@ -118,7 +119,16 @@ app.post("/verify-class", (req, res) => {
                         content: 'Section found!!'
                     }
                 ]
-            }, { conversation: { memory: Object.assign({}, recieved.conversation.memory, { code: { raw: obj.code, value: obj.code } }) } });
+            }, {
+                conversation: {
+                    memory: Object.assign({}, received.conversation.memory, {
+                        code: {
+                            raw: obj.code,
+                            value: obj.code
+                        }
+                    })
+                }
+            });
             res.send(toSend);
         } else {
             let toSend = Object.assign({}, {
@@ -203,7 +213,7 @@ app.post("/verify-code", (req, res) => {
             let toSend = Object.assign({}, {
                 replies: [{
                     type: 'text',
-                    content: 'Wha-- You\'re already in the class! Are you okay?'
+                    content: 'Wha-- You\'re already in this class! Are you okay?'
                 }],
             }, {
                 conversation: {
@@ -215,6 +225,69 @@ app.post("/verify-code", (req, res) => {
         
     })
 });
+
+app.post("/confirm-consultation", (req, res) => {
+    let received = req.body;
+
+    let section = received.conversation.memory.section.value.toUpperCase().replace(/ /g, '');
+    let subject = received.conversation.memory.subject.value.toUpperCase().replace(/ /g, '');
+    let start_time = '';
+    let end_time = '';
+
+    if (received.conversation.memory.interval) {
+        start_time = received.conversation.memory.interval.begin;
+        end_time = received.conversation.memory.interval.end;
+    } else {
+        start_time = received.conversation.memory.start.iso;
+        end_time = received.conversation.memory.end.iso;
+    }
+
+    if (moment(start_time) - moment() < 0 || moment(end_time) - moment() < 0) {
+        let toSend = Object.assign({}, {
+            replies: [{
+                type: 'text',
+                content: 'Sorry, but the DeLorean is broken right now. Please repeat your request (but with a later date).'
+            }],
+        }, {
+            conversation: {
+                memory: {}
+            }
+        });
+        res.send(toSend);
+    }
+
+    Section.findOne({
+        sectionName: section,
+        subject: subject,
+    }, function (err, obj) {
+        if (!obj) {
+            let toSend = Object.assign({}, {
+                replies: [{
+                    type: 'text',
+                    content: 'Not to hurt your pride and ego, but I think you misspelled some things there. Please try again.'
+                }],
+            }, { conversation: { memory: {} } });
+            res.send(toSend);
+        } else {
+            let toSend = Object.assign({}, {
+                replies: [{
+                    type: 'quickReplies',
+                    content: {
+                        title: `You want to schedule a consultation for the class ${subject} ${section} from ${moment(start_time).format('dddd, MMMM Do YYYY, h:mm:ss a')} to ${moment(end_time).format('dddd, MMMM Do YYYY, h:mm:ss a')}?`,
+                        buttons: [{
+                            title: 'Yes',
+                            value: 'yes'
+                        }, {
+                            title: 'No',
+                            value: 'no'
+                        }]
+                    }
+                }],
+            }, received.conversation);
+            res.send(toSend);
+        }
+    })
+})
 
 analyzeEntities = (sender, res, input) => {
     //if wit only detected one intent
@@ -234,17 +307,38 @@ analyzeEntities = (sender, res, input) => {
                 });
                 conversationID = undefined;
             } else if (res.entities.subject.length == 1) {
-                sendMessage(sender, {
-                    text: 'Okay! I\'m on it!'
-                });
-                client.request.converseText(input, { conversationToken: sender }).then((res) => {
-                    sendMessage(sender, { text: res.replies });
-                });
+                conversationId = (typeof conversationId === 'undefined') ? Math.floor((Math.random() * 1000000) + 1) : conversationId;
+                build.dialog({
+                        type: 'text',
+                        content: input
+                    }, {
+                        conversationId: conversationId
+                    })
+                    .then(res => {
+                        console.log(res);
+                        conversationId = res.conversation.id;
+                        res.messages.map((message) => {
+                            if (message.type === 'quickReplies') {
+                                sendQuickReply(sender, message.content);
+                            } else {
+                                sendMessage(sender, {
+                                    text: message.content
+                                });
+                            }
+                        });
+                    })
+                    .catch((err) => {
+                        sendMessage(sender, {
+                            text: 'Oops, we got an error from Recast.ai, our magic Human Understandinator(tm). Please try again.'
+                        }).catch(console.error);
+                        console.log(err.stack || err);
+                        conversationID = undefined;
+                    })
             }
         } else if (res.intents[0].slug === "addclass") {
             if (res.entities.number && !res.entities.subject) {
                 sendMessage(sender, {
-                    text: 'Only one section at a time please, and please include it in the request.'
+                    text: 'Only one subject at a time please, and please include it in the request.'
                 });
                 conversationID = undefined;
             } else if (!res.entities.subject && !res.entities.number) {
