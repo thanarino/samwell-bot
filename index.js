@@ -254,43 +254,47 @@ app.post("/confirm-consultation", (req, res) => {
             }
         });
         res.send(toSend);
-    }
-
-    Section.findOne({
-        sectionName: section,
-        subject: subject,
-    }, function (err, obj) {
-        if (!obj) {
-            let toSend = Object.assign({}, {
-                replies: [{
-                    type: 'text',
-                    content: 'Not to hurt your pride and ego, but I think you misspelled some things there. Please try again.'
-                }],
-            }, { conversation: { memory: {} } });
-            res.send(toSend);
-        } else {
-            let toSend = Object.assign({}, {
-                replies: [{
-                    type: 'quickReplies',
-                    content: {
-                        title: `You want to schedule a consultation for the class ${subject} ${section} from ${moment(start_time).format('MMMM Do, YYYY') === moment(end_time).format('MMMM Do, YYYY') ? `${moment(end_time).format('MMMM Do, YYYY')} ${ moment(start_time).format('h:mm:ss a') } to ${ moment(end_time).format('h:mm:ss a') }`: `${ moment(start_time).format('dddd, MMMM Do, h:mm:ss a') } to ${ moment(end_time).format('dddd, MMMM Do, h:mm:ss a') }`}?`,
-                        buttons: [{
-                            title: 'Yes',
-                            value: 'yes'
-                        }, {
-                            title: 'No',
-                            value: 'no'
-                        }]
+    } else {
+        Section.findOne({
+            sectionName: section,
+            subject: subject,
+        }, function (err, obj) {
+            if (!obj) {
+                let toSend = Object.assign({}, {
+                    replies: [{
+                        type: 'text',
+                        content: 'Not to hurt your pride and/or ego, but I think you misspelled some things there (subject or section, most likely). Please try again.'
+                    }],
+                }, {
+                    conversation: {
+                        memory: {}
                     }
-                }],
-            }, {
-                conversation: {
-                    memory: {}
-                }
-            });
-            res.send(toSend);
-        }
-    })
+                });
+                res.send(toSend);
+            } else {
+                let toSend = Object.assign({}, {
+                    replies: [{
+                        type: 'quickReplies',
+                        content: {
+                            title: `You want to schedule a consultation for the class ${subject} ${section} from ${moment(start_time).format('MMMM Do, YYYY') === moment(end_time).format('MMMM Do, YYYY') ? `${moment(end_time).format('MMMM Do, YYYY')} ${ moment(start_time).format('h:mm:ss a') } to ${ moment(end_time).format('h:mm:ss a') }`: `${ moment(start_time).format('dddd, MMMM Do, h:mm:ss a') } to ${ moment(end_time).format('dddd, MMMM Do, h:mm:ss a') }`}?`,
+                            buttons: [{
+                                title: 'Yes',
+                                value: 'yes'
+                            }, {
+                                title: 'No',
+                                value: 'no'
+                            }]
+                        }
+                    }],
+                }, {
+                    conversation: {
+                        memory: {}
+                    }
+                });
+                res.send(toSend);
+            }
+        })
+    }
 })
 
 analyzeEntities = (sender, res, input) => {
