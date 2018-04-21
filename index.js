@@ -223,20 +223,73 @@ analyzeEntities = (sender, res, input) => {
         if (res.intents[0].slug === "addconsultation") {
             if (!res.entities.subject) {
                 //if there is no subject in the user request
-                sendMessage(sender, { text: 'Please include a subject in your request.' });
+                sendMessage(sender, {
+                    text: 'You forgot to put a subject there, buddy.'
+                });
                 conversationID = undefined;
             } else if (res.entities.subject.length > 1) {
                 //error, should be one subject only
-                sendMessage(sender, { text: 'Oh no! Only one subject per request please! I always pretend I\'m good at multitasking but in reality, I\'m really bad at it!' });
+                sendMessage(sender, {
+                    text: 'Oh no! Only one subject per request please! I always pretend I\'m good at multitasking but in reality, I\'m really bad at it!'
+                });
                 conversationID = undefined;
             } else if (res.entities.subject.length == 1) {
-                sendMessage(sender, { text: 'Okay! I\'m on it!' })
+                sendMessage(sender, {
+                    text: 'Okay! I\'m on it!'
+                });
                 client.request.converseText(input, { conversationToken: sender }).then((res) => {
                     sendMessage(sender, { text: res.replies });
-                })
+                });
             }
-        } else if (res.intents[0].slug === "addclass" || res.intents[0].slug === "confirmentry" || res.intents[0].slug === "getcode") {
-            conversationId = (typeof conversationId === 'undefined') ? Math.floor((Math.random() * 1000000) + 1) : conversationId;
+        } else if (res.intents[0].slug === "addclass") {
+            if (res.entities.number && !res.entities.subject) {
+                sendMessage(sender, {
+                    text: 'Only one section at a time please, and please include it in the request.'
+                });
+                conversationID = undefined;
+            } else if (!res.entities.subject && !res.entities.number) {
+                //if there is no subject in the user request
+                sendMessage(sender, {
+                    text: 'I can\'t seem to find a subject in your request.'
+                });
+                conversationID = undefined;
+            } else if (res.entities.subject.length > 1) {
+                //error, should be one subject only
+                sendMessage(sender, {
+                    text: 'Only one subject per request please. I can only take so much.'
+                });
+                conversationID = undefined;
+            } else if (res.entities.subject.length == 1) {
+                conversationId = (typeof conversationId === 'undefined') ? Math.floor((Math.random() * 1000000) + 1) : conversationId;
+                build.dialog({
+                        type: 'text',
+                        content: input
+                    }, {
+                        conversationId: conversationId
+                    })
+                    .then(res => {
+                        console.log(res);
+                        conversationId = res.conversation.id;
+                        res.messages.map((message) => {
+                            if (message.type === 'quickReplies') {
+                                sendQuickReply(sender, message.content);
+                            } else {
+                                sendMessage(sender, {
+                                    text: message.content
+                                });
+                            }
+                        });
+                    })
+                    .catch((err) => {
+                        sendMessage(sender, {
+                            text: 'Oops, we got an error from Recast.ai, our magic Human Understandinator(tm). Please try again.'
+                        }).catch(console.error);
+                        console.log(err.stack || err);
+                        conversationID = undefined;
+                    })
+            }
+        } else if (res.intents[0].slug === "confirmentry" || res.intents[0].slug === "getcode") {
+            // conversationId = (typeof conversationId === 'undefined') ? Math.floor((Math.random() * 1000000) + 1) : conversationId;
             build.dialog({ type: 'text', content: input }, { conversationId: conversationId })
                 .then(res => {
                     console.log(res);
