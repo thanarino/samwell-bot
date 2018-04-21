@@ -159,6 +159,7 @@ app.post("/verify-code", (req, res) => {
 
     Conversationid.findOne({ conversationid: received.conversation.id }, (err, obj) => {
         Section.findOne({ sectionName: section, subject: subject, studentList: obj.fbid }, function (err2, obj2) {
+            console.log(obj);
             if (!obj2) {
                 if (code === inputCode) {
                     Section.update({
