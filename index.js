@@ -314,11 +314,12 @@ app.post("/verify-class-enlisted", (req, res) => {
 
 analyzeEntities = (sender, res, input) => {
     //if wit only detected one intent
-    console.log(res);
+    console.log(sender);
     let conversationID = undefined;
     Conversationid.findOne({ fbid: sender }, function (err, obj) {
         if (!obj) {
             conversationID = obj.conversationid;
+            console.log(conversationID);
         }
     })
     if (res.intents.length === 1) {
