@@ -153,10 +153,7 @@ app.post("/verify-code", (req, res) => {
     let code = received.conversation.memory.code.raw;
     let inputCode = received.conversation.memory.inputCode.raw;
 
-    Section.findOne({
-        sectionName: section,
-        subject: subject
-    }, function (err, obj) {
+    Section.findOne({ sectionName: section, subject: subject, studentList: sender }, function (err, obj) {
         if (!obj) {
             if (code === inputCode) {
                 Section.update({
