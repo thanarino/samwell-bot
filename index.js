@@ -397,7 +397,7 @@ analyzeEntities = (sender, res, input) => {
                     })
                     .then(res => {
                         console.log(res);
-                        conversationId = res.conversation.id;
+                        conversationID = res.conversation.id;
                         res.messages.map((message) => {
                             if (message.type === 'quickReplies') {
                                 sendQuickReply(sender, message.content);
@@ -450,7 +450,9 @@ analyzeEntities = (sender, res, input) => {
                         text: 'Oops, we got an error from Recast.ai, our magic Human Understandinator(tm). Please try again.'
                     }).catch(console.error);
                     console.log(err.stack || err);
-                    Conversationid.update({ fbid: sender }, { $set: { conversationid: undefined } });
+                    Conversationid.update({ fbid: sender }, { $set: { conversationid: undefined } }, function (err, result) {
+                        
+                    });
                     // conversationID = undefined;
                 })
         }
@@ -462,7 +464,7 @@ processPostback = (event) => {
     let payload = event.postback.payload;
 
     if (payload === "Greeting") {
-        conversationID = Math.floor((Math.random() * 1000000) + 1);
+        // conversationID = Math.floor((Math.random() * 1000000) + 1);
         checkID(senderId);
     }
 }
