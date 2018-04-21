@@ -278,10 +278,10 @@ app.post("/confirm-consultation", (req, res) => {
                             title: `You want to schedule a consultation for the class ${subject} ${section} ${moment(start_time).format('MMMM Do, YYYY') === moment(end_time).format('MMMM Do, YYYY') ? `on ${moment(end_time).format('dddd, MMMM Do')} from ${moment(start_time).format('h:mm a')} to ${moment(end_time).format('h:mm a')}` : `from ${moment(start_time).format('dddd, MMMM Do, h:mm a')} to ${moment(end_time).format('dddd, MMMM Do, h:mm a')}`}?`,
                             buttons: [{
                                 title: 'Yes',
-                                value: 'yes'
+                                value: 'Yes'
                             }, {
                                 title: 'No',
-                                value: 'no'
+                                value: 'No'
                             }]
                         }
                     }],
