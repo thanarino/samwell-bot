@@ -283,7 +283,11 @@ app.post("/confirm-consultation", (req, res) => {
                         }]
                     }
                 }],
-            }, received.conversation);
+            }, {
+                conversation: {
+                    memory: {}
+                }
+            });
             res.send(toSend);
         }
     })
