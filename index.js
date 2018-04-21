@@ -273,7 +273,7 @@ app.post("/confirm-consultation", (req, res) => {
                 replies: [{
                     type: 'quickReplies',
                     content: {
-                        title: `You want to schedule a consultation for the class ${subject} ${section} from ${moment(start_time).format('dddd, MMMM Do YYYY, h:mm:ss a')} to ${moment(end_time).format('dddd, MMMM Do YYYY, h:mm:ss a')}?`,
+                        title: `You want to schedule a consultation for the class ${subject} ${section} from ${moment(start_time).format('MMMM Do, YYYY') === moment(end_time).format('MMMM Do, YYYY') ? `${moment(end_time).format('MMMM Do, YYYY')} ${ moment(start_time).format('h:mm:ss a') } to ${ moment(end_time).format('h:mm:ss a') }`: `${ moment(start_time).format('dddd, MMMM Do, h:mm:ss a') } to ${ moment(end_time).format('dddd, MMMM Do, h:mm:ss a') }`}?`,
                         buttons: [{
                             title: 'Yes',
                             value: 'yes'
