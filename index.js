@@ -113,25 +113,21 @@ app.post("/verify-class", (req, res) => {
         console.log(obj);
         if (obj) {
             let toSend = Object.assign({}, {
-                replies: [{
-                    type: 'text',
-                    content: 'Okay, verifying...'
-                },{
-                    type: 'text',
-                    content: 'Found it!'
-                },
+                replies: [
                     {
                         type: 'text',
                         content: 'Your teacher should have provided a code to enter this section. What is it?'
-                    }]
+                    },
+                    {
+                        type: 'text',
+                        content: 'Section found!!'
+                    }
+                ]
             }, { conversation: { memory: Object.assign({}, recieved.conversation.memory, { code: { raw: obj.code, value: obj.code } }) } });
             res.send(toSend);
         } else {
             let toSend = Object.assign({}, {
                 replies: [{
-                    type: 'text',
-                    content: 'Okay, verifying...'
-                },{
                     type: 'text',
                     content: "I can't seem to find the class. Can you repeat your request?"
                 }],
@@ -166,14 +162,15 @@ app.post("/verify-code", (req, res) => {
                     }, (err, result) => {
                         if (err) {
                             let toSend = Object.assign({}, {
-                                replies: [{
-                                    type: 'text',
-                                    content: 'Hmmm, it seems that something went wrong in enlisting you into the class.'
-                                },
-                                {
-                                    type: 'text',
-                                    content: 'Please don\'t break any library doors -- just try again later.'
-                                }
+                                replies: [
+                                    {
+                                        type: 'text',
+                                        content: 'Please don\'t break any library doors -- just try again later.'
+                                    },
+                                    {
+                                        type: 'text',
+                                        content: 'Hmmm, it seems that something went wrong in enlisting you into the class.'
+                                    }
                                 ],
                             }, {
                                     conversation: {
@@ -183,13 +180,16 @@ app.post("/verify-code", (req, res) => {
                             res.send(toSend);
                         } else {
                             let toSend = Object.assign({}, {
-                                replies: [{
-                                    type: 'text',
-                                    content: 'You\'re now in the class!'
-                                }, {
-                                    type: 'text',
-                                    content: 'Do you feel like you belong now?'
-                                }],
+                                replies: [
+                                    {
+                                        type: 'text',
+                                        content: 'Do you feel like you belong now?'
+                                    },
+                                    {
+                                        type: 'text',
+                                        content: 'You\'re now in the class!'
+                                    }
+                                ],
                             }, received.conversation);
                             res.send(toSend);
                         }
@@ -199,7 +199,7 @@ app.post("/verify-code", (req, res) => {
                 let toSend = Object.assign({}, {
                     replies: [{
                         type: 'text',
-                        content: 'Code does not match.'
+                        content: 'Hmm, It looks like you entered the code wrong.'
                     }],
                 }, received.conversation);
                 res.send(toSend);
