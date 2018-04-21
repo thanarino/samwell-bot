@@ -36,11 +36,6 @@ const findOrCreateSession = (fbid) => {
     return sessionId;
 };
 
-// const wit = new Wit({
-//     accessToken: WIT_TOKEN,
-//     logger: new log.Logger(log.INFO)
-// });
-
 let app = express();
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
@@ -223,6 +218,7 @@ app.post("/verify-code", (req, res) => {
 
 analyzeEntities = (sender, res, input) => {
     //if wit only detected one intent
+    console.log(res);
     if (res.intents.length === 1) {
         if (res.intents[0].slug === "addconsultation") {
             if (!res.entities.subject) {
