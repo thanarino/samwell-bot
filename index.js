@@ -106,7 +106,6 @@ app.post("/verify-class", (req, res) => {
     let subject = received.conversation.memory.subject.value.toUpperCase().replace(/ /g, '');
 
     let found = Section.findOne({ sectionName: section, subject: subject }, function (err, obj) {
-        console.log(obj);
         if (obj) {
             let toSend = Object.assign({}, {
                 replies: [
@@ -266,17 +265,17 @@ app.post("/confirm-consultation", (req, res) => {
                         content: 'Not to hurt your pride and/or ego, but I think you misspelled some things there (subject or section, most likely). Please try again.'
                     }],
                 }, {
-                    conversation: {
-                        memory: {}
-                    }
-                });
+                        conversation: {
+                            memory: {}
+                        }
+                    });
                 res.send(toSend);
             } else {
                 let toSend = Object.assign({}, {
                     replies: [{
                         type: 'quickReplies',
                         content: {
-                            title: `You want to schedule a consultation for the class ${subject} ${section} from ${moment(start_time).format('MMMM Do, YYYY') === moment(end_time).format('MMMM Do, YYYY') ? `${moment(end_time).format('MMMM Do, YYYY')} ${ moment(start_time).format('h:mm:ss a') } to ${ moment(end_time).format('h:mm:ss a') }`: `${ moment(start_time).format('dddd, MMMM Do, h:mm:ss a') } to ${ moment(end_time).format('dddd, MMMM Do, h:mm:ss a') }`}?`,
+                            title: `You want to schedule a consultation for the class ${subject} ${section} ${moment(start_time).format('MMMM Do, YYYY') === moment(end_time).format('MMMM Do, YYYY') ? `on ${moment(end_time).format('dddd, MMMM Do')} from ${moment(start_time).format('h:mm a')} to ${moment(end_time).format('h:mm a')}` : `from ${moment(start_time).format('dddd, MMMM Do, h:mm a')} to ${moment(end_time).format('dddd, MMMM Do, h:mm a')}`}?`,
                             buttons: [{
                                 title: 'Yes',
                                 value: 'yes'
@@ -288,7 +287,10 @@ app.post("/confirm-consultation", (req, res) => {
                     }],
                 }, {
                     conversation: {
-                        memory: {}
+                        memory: Object.assign({}, received.conversation.memory, {
+                            start_time: start_time,
+                            end_time: end_time
+                        })
                     }
                 });
                 res.send(toSend);
