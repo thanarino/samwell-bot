@@ -389,6 +389,7 @@ analyzeEntities = (sender, res, input) => {
                 Conversationid.update({ fbid: sender }, { $set: { conversationid: undefined } });
                 // conversationID = undefined;
             } else if (res.entities.subject.length == 1) {
+                console.log(conversationID);
                 build.dialog({
                         type: 'text',
                         content: input
