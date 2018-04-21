@@ -321,30 +321,106 @@ analyzeEntities = (sender, res, input) => {
             conversationID = obj.conversationid;
             console.log(conversationID);
         }
-    })
-    if (res.intents.length === 1) {
-        if (res.intents[0].slug === "addconsultation") {
-            if (!res.entities.subject) {
-                //if there is no subject in the user request
-                sendMessage(sender, {
-                    text: 'You forgot to put a subject there, buddy.'
-                });
-                Conversationid.update({ fbid: sender }, { $set: { conversationid: undefined } });
-                // conversationID = undefined;
-            } else if (res.entities.subject.length > 1) {
-                //error, should be one subject only
-                sendMessage(sender, {
-                    text: 'Oh no! Only one subject per request please! I always pretend I\'m good at multitasking but in reality, I\'m really bad at it!'
-                });
-                Conversationid.update({ fbid: sender }, { $set: { conversationid: undefined } });
-                // conversationID = undefined;
-            } else if (res.entities.subject.length == 1) {
-                build.dialog({
+
+        if (res.intents.length === 1) {
+            if (res.intents[0].slug === "addconsultation") {
+                if (!res.entities.subject) {
+                    //if there is no subject in the user request
+                    sendMessage(sender, {
+                        text: 'You forgot to put a subject there, buddy.'
+                    });
+                    Conversationid.update({ fbid: sender }, { $set: { conversationid: undefined } });
+                    // conversationID = undefined;
+                } else if (res.entities.subject.length > 1) {
+                    //error, should be one subject only
+                    sendMessage(sender, {
+                        text: 'Oh no! Only one subject per request please! I always pretend I\'m good at multitasking but in reality, I\'m really bad at it!'
+                    });
+                    Conversationid.update({ fbid: sender }, { $set: { conversationid: undefined } });
+                    // conversationID = undefined;
+                } else if (res.entities.subject.length == 1) {
+                    build.dialog({
                         type: 'text',
                         content: input
                     }, {
-                        conversationId: conversationID
-                    })
+                            conversationId: conversationID
+                        })
+                        .then(res => {
+                            console.log(res);
+                            conversationId = res.conversation.id;
+                            res.messages.map((message) => {
+                                if (message.type === 'quickReplies') {
+                                    sendQuickReply(sender, message.content);
+                                } else {
+                                    sendMessage(sender, {
+                                        text: message.content
+                                    });
+                                }
+                            });
+                        })
+                        .catch((err) => {
+                            sendMessage(sender, {
+                                text: 'Oops, we got an error from Recast.ai, our magic Human Understandinator(tm). Please try again.'
+                            }).catch(console.error);
+                            console.log(err.stack || err);
+                            Conversationid.update({ fbid: sender }, { $set: { conversationid: undefined } });
+                            // conversationID = undefined;
+                        })
+                }
+            } else if (res.intents[0].slug === "addclass") {
+                if (res.entities.number && !res.entities.subject) {
+                    sendMessage(sender, {
+                        text: 'Only one subject at a time please, and please include it in the request.'
+                    });
+                    Conversationid.update({ fbid: sender }, { $set: { conversationid: undefined } });
+                    // conversationID = undefined;
+                } else if (!res.entities.subject && !res.entities.number) {
+                    //if there is no subject in the user request
+                    sendMessage(sender, {
+                        text: 'I can\'t seem to find a subject in your request.'
+                    });
+                    Conversationid.update({ fbid: sender }, { $set: { conversationid: undefined } });
+                    // conversationID = undefined;
+                } else if (res.entities.subject.length > 1) {
+                    //error, should be one subject only
+                    sendMessage(sender, {
+                        text: 'Only one subject per request please. I can only take so much.'
+                    });
+                    Conversationid.update({ fbid: sender }, { $set: { conversationid: undefined } });
+                    // conversationID = undefined;
+                } else if (res.entities.subject.length == 1) {
+                    console.log(conversationID);
+                    build.dialog({
+                        type: 'text',
+                        content: input
+                    }, {
+                            conversationId: conversationID
+                        })
+                        .then(res => {
+                            console.log(res);
+                            conversationID = res.conversation.id;
+                            res.messages.map((message) => {
+                                if (message.type === 'quickReplies') {
+                                    sendQuickReply(sender, message.content);
+                                } else {
+                                    sendMessage(sender, {
+                                        text: message.content
+                                    });
+                                }
+                            });
+                        })
+                        .catch((err) => {
+                            sendMessage(sender, {
+                                text: 'Oops, we got an error from Recast.ai, our magic Human Understandinator(tm). Please try again.'
+                            }).catch(console.error);
+                            console.log(err.stack || err);
+                            Conversationid.update({ fbid: sender }, { $set: { conversationid: undefined } });
+                            // conversationID = undefined;
+                        })
+                }
+            } else if (res.intents[0].slug === "confirmentry" || res.intents[0].slug === "getcode") {
+                // conversationId = (typeof conversationId === 'undefined') ? Math.floor((Math.random() * 1000000) + 1) : conversationId;
+                build.dialog({ type: 'text', content: input }, { conversationId: conversationID })
                     .then(res => {
                         console.log(res);
                         conversationId = res.conversation.id;
@@ -352,9 +428,7 @@ analyzeEntities = (sender, res, input) => {
                             if (message.type === 'quickReplies') {
                                 sendQuickReply(sender, message.content);
                             } else {
-                                sendMessage(sender, {
-                                    text: message.content
-                                });
+                                sendMessage(sender, { text: message.content });
                             }
                         });
                     })
@@ -366,98 +440,25 @@ analyzeEntities = (sender, res, input) => {
                         Conversationid.update({ fbid: sender }, { $set: { conversationid: undefined } });
                         // conversationID = undefined;
                     })
-            }
-        } else if (res.intents[0].slug === "addclass") {
-            if (res.entities.number && !res.entities.subject) {
-                sendMessage(sender, {
-                    text: 'Only one subject at a time please, and please include it in the request.'
-                });
-                Conversationid.update({ fbid: sender }, { $set: { conversationid: undefined } });
-                // conversationID = undefined;
-            } else if (!res.entities.subject && !res.entities.number) {
-                //if there is no subject in the user request
-                sendMessage(sender, {
-                    text: 'I can\'t seem to find a subject in your request.'
-                });
-                Conversationid.update({ fbid: sender }, { $set: { conversationid: undefined } });
-                // conversationID = undefined;
-            } else if (res.entities.subject.length > 1) {
-                //error, should be one subject only
-                sendMessage(sender, {
-                    text: 'Only one subject per request please. I can only take so much.'
-                });
-                Conversationid.update({ fbid: sender }, { $set: { conversationid: undefined } });
-                // conversationID = undefined;
-            } else if (res.entities.subject.length == 1) {
-                console.log(conversationID);
-                build.dialog({
-                        type: 'text',
-                        content: input
-                    }, {
-                        conversationId: conversationID
-                    })
+            } else if (res.intents[0].slug === "getsection" || res.intents[0].slug === "getsubject") {
+                build.dialog({ type: 'text', content: input }, { conversationId: conversationID })
                     .then(res => {
-                        console.log(res);
-                        conversationID = res.conversation.id;
-                        res.messages.map((message) => {
-                            if (message.type === 'quickReplies') {
-                                sendQuickReply(sender, message.content);
-                            } else {
-                                sendMessage(sender, {
-                                    text: message.content
-                                });
-                            }
-                        });
+                        conversationId = res.conversation.id;
+                        sendQuickReply(sender, res.messages[0].content);
                     })
                     .catch((err) => {
                         sendMessage(sender, {
                             text: 'Oops, we got an error from Recast.ai, our magic Human Understandinator(tm). Please try again.'
                         }).catch(console.error);
                         console.log(err.stack || err);
-                        Conversationid.update({ fbid: sender }, { $set: { conversationid: undefined } });
+                        Conversationid.update({ fbid: sender }, { $set: { conversationid: undefined } }, function (err, result) {
+
+                        });
                         // conversationID = undefined;
                     })
             }
-        } else if (res.intents[0].slug === "confirmentry" || res.intents[0].slug === "getcode") {
-            // conversationId = (typeof conversationId === 'undefined') ? Math.floor((Math.random() * 1000000) + 1) : conversationId;
-            build.dialog({ type: 'text', content: input }, { conversationId: conversationID })
-                .then(res => {
-                    console.log(res);
-                    conversationId = res.conversation.id;
-                    res.messages.map((message) => {
-                        if (message.type === 'quickReplies') {
-                            sendQuickReply(sender, message.content);
-                        } else {
-                            sendMessage(sender, { text: message.content });
-                        }
-                    });
-                })
-                .catch((err) => {
-                    sendMessage(sender, {
-                        text: 'Oops, we got an error from Recast.ai, our magic Human Understandinator(tm). Please try again.'
-                    }).catch(console.error);
-                    console.log(err.stack || err);
-                    Conversationid.update({ fbid: sender }, { $set: { conversationid: undefined } });
-                    // conversationID = undefined;
-                })
-        } else if (res.intents[0].slug === "getsection" || res.intents[0].slug === "getsubject") {
-            build.dialog({ type: 'text', content: input }, { conversationId: conversationID })
-                .then(res => {
-                    conversationId = res.conversation.id;
-                    sendQuickReply(sender, res.messages[0].content);
-                })
-                .catch((err) => {
-                    sendMessage(sender, {
-                        text: 'Oops, we got an error from Recast.ai, our magic Human Understandinator(tm). Please try again.'
-                    }).catch(console.error);
-                    console.log(err.stack || err);
-                    Conversationid.update({ fbid: sender }, { $set: { conversationid: undefined } }, function (err, result) {
-                        
-                    });
-                    // conversationID = undefined;
-                })
         }
-    }
+    })
 }
 
 processPostback = (event) => {
