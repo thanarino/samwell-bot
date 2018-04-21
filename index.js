@@ -148,84 +148,82 @@ app.post("/verify-class", (req, res) => {
 app.post("/verify-code", (req, res) => {
     let received = req.body;
 
-    console.log('here');
-    console.log(sender);
-
     let section = received.conversation.memory.section.value.toUpperCase().replace(/ /g, '');
     let subject = received.conversation.memory.subject.value.toUpperCase().replace(/ /g, '');
 
     let code = received.conversation.memory.code.raw;
     let inputCode = received.conversation.memory.inputCode.raw;
 
-    Section.findOne({ sectionName: section, subject: subject, studentList: sender }, function (err, obj) {
-        if (!obj) {
-            if (code === inputCode) {
-                Section.update({
-                    sectionName: section,
-                    subject: subject
-                }, {
-                        $push: {
-                            studentList: sender
-                        }
-                    }, (err, result) => {
-                        if (err) {
-                            let toSend = Object.assign({}, {
-                                replies: [
-                                    {
-                                        type: 'text',
-                                        content: 'Please don\'t break any library doors -- just try again later.'
-                                    },
-                                    {
-                                        type: 'text',
-                                        content: 'Hmmm, it seems that something went wrong in enlisting you into the class.'
-                                    }
-                                ],
-                            }, {
-                                    conversation: {
-                                        memory: {}
-                                    }
-                                });
-                            res.send(toSend);
-                        } else {
-                            let toSend = Object.assign({}, {
-                                replies: [
-                                    {
-                                        type: 'text',
-                                        content: 'Do you feel like you belong now?'
-                                    },
-                                    {
-                                        type: 'text',
-                                        content: 'You\'re now in the class!'
-                                    }
-                                ],
-                            }, received.conversation);
-                            res.send(toSend);
-                        }
-                    })
+    Conversationid.findOne({ conversationid: req.conversation.id }, (err, obj) => {
+        Section.findOne({ sectionName: section, subject: subject, studentList: obj.fbid }, function (err2, obj2) {
+            if (!obj2) {
+                if (code === inputCode) {
+                    Section.update({
+                        sectionName: section,
+                        subject: subject
+                    }, {
+                            $push: {
+                                studentList: obj.fbid
+                            }
+                        }, (err, result) => {
+                            if (err) {
+                                let toSend = Object.assign({}, {
+                                    replies: [
+                                        {
+                                            type: 'text',
+                                            content: 'Please don\'t break any library doors -- just try again later.'
+                                        },
+                                        {
+                                            type: 'text',
+                                            content: 'Hmmm, it seems that something went wrong in enlisting you into the class.'
+                                        }
+                                    ],
+                                }, {
+                                        conversation: {
+                                            memory: {}
+                                        }
+                                    });
+                                res.send(toSend);
+                            } else {
+                                let toSend = Object.assign({}, {
+                                    replies: [
+                                        {
+                                            type: 'text',
+                                            content: 'Do you feel like you belong now?'
+                                        },
+                                        {
+                                            type: 'text',
+                                            content: 'You\'re now in the class!'
+                                        }
+                                    ],
+                                }, received.conversation);
+                                res.send(toSend);
+                            }
+                        })
 
+                } else {
+                    let toSend = Object.assign({}, {
+                        replies: [{
+                            type: 'text',
+                            content: 'Hmm, It looks like you entered the code wrong.'
+                        }],
+                    }, received.conversation);
+                    res.send(toSend);
+                }
             } else {
                 let toSend = Object.assign({}, {
                     replies: [{
                         type: 'text',
-                        content: 'Hmm, It looks like you entered the code wrong.'
+                        content: 'Wha-- You\'re already in this class! Are you okay?'
                     }],
-                }, received.conversation);
+                }, {
+                        conversation: {
+                            memory: {}
+                        }
+                    });
                 res.send(toSend);
             }
-        } else {
-            let toSend = Object.assign({}, {
-                replies: [{
-                    type: 'text',
-                    content: 'Wha-- You\'re already in this class! Are you okay?'
-                }],
-            }, {
-                conversation: {
-                    memory: {}
-                }
-            });
-            res.send(toSend);
-        }
-        
+        })
     })
 });
 
