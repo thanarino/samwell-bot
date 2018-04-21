@@ -8,14 +8,13 @@ let moment = require('moment');
 let db = mongoose.connect(process.env.MONGODB_URI);
 let Student = require('./models/students');
 let Section = require('./models/sections');
+let Conversationid = require('./models/conversations');
 
 const client = new recastai(process.env.REQUEST_TOKEN);
 const build = client.build;
 
 let { isTyping, sendMessage, sendQuickReply } = require('./exports/common');
 let { checkID } = require('./exports/signup');
-var conversationID = undefined;
-var sender = undefined;
 
 // const WIT_TOKEN = process.env.WIT_TOKEN;
 const FB_PAGE_TOKEN = process.env.FB_PAGE_TOKEN;
@@ -68,25 +67,30 @@ app.post("/webhook", (req, res) => {
         req.body.entry.forEach((entry) => {
             // Iterate over each messaging event
             entry.messaging.forEach((event) => {
+                Conversationid.findOne({ fbid: event.sender.id }, function (err, obj) {
+                    if (!obj) {
+                        Conversationid.create({ fbid: event.sender.id, conversationid: Math.floor((Math.random() * 1000000) + 1)})
+                    }
+                })
                 if (event.postback) {
                     processPostback(event);
                 } else if (event.message && !event.message.is_echo) {
-                    sender = (typeof conversationId === 'undefined') ? event.sender.id : sender;
                     const { text, attachments } = event.message;
 
                     if (attachments) {
-                        sendMessage(sender, { text: 'Sorry, I can only understand text messages for now.' })
+                        sendMessage(event.sender.id, { text: 'Sorry, I can only understand text messages for now.' })
                             .catch(console.error);
                     } else if (text) {
                         client.request.analyseText(text).then((res) => {
-                            analyzeEntities(sender, res, text);
+                            analyzeEntities(event.sender.id, res, text);
                         })
                             .catch((err) => {
-                                sendMessage(sender, {
+                                sendMessage(event.sender.id, {
                                         text: 'Oops, we got an error from Recast.ai, our magic Human Understandinator(tm). Please try again.'
                                     }).catch(console.error);
                                 console.log(err.stack || err);
-                                conversationID = undefined;
+                                Conversationid.update({ fbid: sender }, { $set: { conversationid: undefined } });
+                                // conversationID = undefined;
                         }) 
                     } else {
                         console.log('recieved event', JSON.stringify(event));
@@ -248,10 +252,10 @@ app.post("/confirm-consultation", (req, res) => {
                 content: 'Sorry, but the DeLorean is broken right now. Please repeat your request (but with a later date).'
             }],
         }, {
-            conversation: {
-                memory: {}
-            }
-        });
+                conversation: {
+                    memory: {}
+                }
+            });
         res.send(toSend);
     } else {
         Section.findOne({
@@ -286,22 +290,37 @@ app.post("/confirm-consultation", (req, res) => {
                         }
                     }],
                 }, {
-                    conversation: {
-                        memory: Object.assign({}, received.conversation.memory, {
-                            start_time: start_time,
-                            end_time: end_time
-                        })
-                    }
-                });
+                        conversation: {
+                            memory: Object.assign({}, received.conversation.memory, {
+                                start_time: start_time,
+                                end_time: end_time
+                            })
+                        }
+                    });
                 res.send(toSend);
             }
         })
     }
+});
+
+app.post("/verify-class-enlisted", (req, res) => {
+    let received = req.body;
+
+    let section = received.conversation.memory.section.value.toUpperCase().replace(/ /g, '');
+    let subject = received.conversation.memory.subject.value.toUpperCase().replace(/ /g, '');
+    let start_time = received.conversation.memory.start_time;
+    let end_time = received.conversation.memory.end_time;
 })
 
 analyzeEntities = (sender, res, input) => {
     //if wit only detected one intent
     console.log(res);
+    let conversationID = undefined;
+    Conversationid.findOne({ fbid: sender }, function (err, obj) {
+        if (!obj) {
+            conversationID = obj.conversationid;
+        }
+    })
     if (res.intents.length === 1) {
         if (res.intents[0].slug === "addconsultation") {
             if (!res.entities.subject) {
@@ -309,20 +328,21 @@ analyzeEntities = (sender, res, input) => {
                 sendMessage(sender, {
                     text: 'You forgot to put a subject there, buddy.'
                 });
-                conversationID = undefined;
+                Conversationid.update({ fbid: sender }, { $set: { conversationid: undefined } });
+                // conversationID = undefined;
             } else if (res.entities.subject.length > 1) {
                 //error, should be one subject only
                 sendMessage(sender, {
                     text: 'Oh no! Only one subject per request please! I always pretend I\'m good at multitasking but in reality, I\'m really bad at it!'
                 });
-                conversationID = undefined;
+                Conversationid.update({ fbid: sender }, { $set: { conversationid: undefined } });
+                // conversationID = undefined;
             } else if (res.entities.subject.length == 1) {
-                conversationId = (typeof conversationId === 'undefined') ? Math.floor((Math.random() * 1000000) + 1) : conversationId;
                 build.dialog({
                         type: 'text',
                         content: input
                     }, {
-                        conversationId: conversationId
+                        conversationId: conversationID
                     })
                     .then(res => {
                         console.log(res);
@@ -342,7 +362,8 @@ analyzeEntities = (sender, res, input) => {
                             text: 'Oops, we got an error from Recast.ai, our magic Human Understandinator(tm). Please try again.'
                         }).catch(console.error);
                         console.log(err.stack || err);
-                        conversationID = undefined;
+                        Conversationid.update({ fbid: sender }, { $set: { conversationid: undefined } });
+                        // conversationID = undefined;
                     })
             }
         } else if (res.intents[0].slug === "addclass") {
@@ -350,26 +371,28 @@ analyzeEntities = (sender, res, input) => {
                 sendMessage(sender, {
                     text: 'Only one subject at a time please, and please include it in the request.'
                 });
-                conversationID = undefined;
+                Conversationid.update({ fbid: sender }, { $set: { conversationid: undefined } });
+                // conversationID = undefined;
             } else if (!res.entities.subject && !res.entities.number) {
                 //if there is no subject in the user request
                 sendMessage(sender, {
                     text: 'I can\'t seem to find a subject in your request.'
                 });
-                conversationID = undefined;
+                Conversationid.update({ fbid: sender }, { $set: { conversationid: undefined } });
+                // conversationID = undefined;
             } else if (res.entities.subject.length > 1) {
                 //error, should be one subject only
                 sendMessage(sender, {
                     text: 'Only one subject per request please. I can only take so much.'
                 });
-                conversationID = undefined;
+                Conversationid.update({ fbid: sender }, { $set: { conversationid: undefined } });
+                // conversationID = undefined;
             } else if (res.entities.subject.length == 1) {
-                conversationId = (typeof conversationId === 'undefined') ? Math.floor((Math.random() * 1000000) + 1) : conversationId;
                 build.dialog({
                         type: 'text',
                         content: input
                     }, {
-                        conversationId: conversationId
+                        conversationId: conversationID
                     })
                     .then(res => {
                         console.log(res);
@@ -389,12 +412,13 @@ analyzeEntities = (sender, res, input) => {
                             text: 'Oops, we got an error from Recast.ai, our magic Human Understandinator(tm). Please try again.'
                         }).catch(console.error);
                         console.log(err.stack || err);
-                        conversationID = undefined;
+                        Conversationid.update({ fbid: sender }, { $set: { conversationid: undefined } });
+                        // conversationID = undefined;
                     })
             }
         } else if (res.intents[0].slug === "confirmentry" || res.intents[0].slug === "getcode") {
             // conversationId = (typeof conversationId === 'undefined') ? Math.floor((Math.random() * 1000000) + 1) : conversationId;
-            build.dialog({ type: 'text', content: input }, { conversationId: conversationId })
+            build.dialog({ type: 'text', content: input }, { conversationId: conversationID })
                 .then(res => {
                     console.log(res);
                     conversationId = res.conversation.id;
@@ -411,10 +435,11 @@ analyzeEntities = (sender, res, input) => {
                         text: 'Oops, we got an error from Recast.ai, our magic Human Understandinator(tm). Please try again.'
                     }).catch(console.error);
                     console.log(err.stack || err);
-                    conversationID = undefined;
+                    Conversationid.update({ fbid: sender }, { $set: { conversationid: undefined } });
+                    // conversationID = undefined;
                 })
         } else if (res.intents[0].slug === "getsection" || res.intents[0].slug === "getsubject") {
-            build.dialog({ type: 'text', content: input }, { conversationId: conversationId })
+            build.dialog({ type: 'text', content: input }, { conversationId: conversationID })
                 .then(res => {
                     conversationId = res.conversation.id;
                     sendQuickReply(sender, res.messages[0].content);
@@ -424,7 +449,8 @@ analyzeEntities = (sender, res, input) => {
                         text: 'Oops, we got an error from Recast.ai, our magic Human Understandinator(tm). Please try again.'
                     }).catch(console.error);
                     console.log(err.stack || err);
-                    conversationID = undefined;
+                    Conversationid.update({ fbid: sender }, { $set: { conversationid: undefined } });
+                    // conversationID = undefined;
                 })
         }
     }
