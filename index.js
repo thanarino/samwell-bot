@@ -205,12 +205,17 @@ app.post("/verify-code", (req, res) => {
                         })
 
                 } else {
+                    console.log("went here");
                     let toSend = Object.assign({}, {
                         replies: [{
                             type: 'text',
                             content: 'Hmm, It looks like you entered the code wrong.'
                         }],
-                    }, received.conversation);
+                    }, {
+                            conversation: {
+                                memory: {}
+                            }
+                        });
                     res.send(toSend);
                 }
             } else {
@@ -419,7 +424,7 @@ analyzeEntities = (sender, res, input) => {
                             // conversationID = undefined;
                         })
                 }
-            } else if (res.intents[0].slug === "confirmentry" || res.intents[0].slug === "getcode") {
+            } else if (res.intents[0].slug === "confirmentry" || res.intents[0].slug === "getcode" || res.intents[0].slug === "verifycode") {
                 // conversationId = (typeof conversationId === 'undefined') ? Math.floor((Math.random() * 1000000) + 1) : conversationId;
                 build.dialog({ type: 'text', content: input }, { conversationId: conversationID })
                     .then(res => {
