@@ -315,7 +315,7 @@ app.post("/verify-class-enlisted", (req, res) => {
 analyzeEntities = (sender, res, input) => {
     //if wit only detected one intent
     console.log(sender);
-    let conversationID = undefined;
+    var conversationID = undefined;
     Conversationid.findOne({ fbid: sender }, function (err, obj) {
         if (obj) {
             conversationID = obj.conversationid;
