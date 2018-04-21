@@ -317,7 +317,7 @@ analyzeEntities = (sender, res, input) => {
     console.log(sender);
     let conversationID = undefined;
     Conversationid.findOne({ fbid: sender }, function (err, obj) {
-        if (!obj) {
+        if (obj) {
             conversationID = obj.conversationid;
             console.log(conversationID);
         }
