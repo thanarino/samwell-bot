@@ -151,6 +151,9 @@ app.post("/verify-code", (req, res) => {
     let section = received.conversation.memory.section.value.toUpperCase().replace(/ /g, '');
     let subject = received.conversation.memory.subject.value.toUpperCase().replace(/ /g, '');
 
+    console.log(received.conversation.memory.code);
+    console.log(received.conversation.memory.inputCode)
+
     let code = received.conversation.memory.code.raw;
     let inputCode = received.conversation.memory.inputCode.raw;
 
