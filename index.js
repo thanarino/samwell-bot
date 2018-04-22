@@ -401,34 +401,39 @@ analyzeEntities = (sender, res, input) => {
                     Conversationid.update({ fbid: sender }, { $set: { conversationid: undefined } });
                     // conversationID = undefined;
                 } else if (res.entities.subject.length == 1) {
-                    console.log(conversationID);
-                    build.dialog({
-                        type: 'text',
-                        content: input
-                    }, {
-                            conversationId: conversationID
-                        })
-                        .then(res => {
-                            console.log(res);
-                            conversationID = res.conversation.id;
-                            res.messages.map((message) => {
-                                if (message.type === 'quickReplies') {
-                                    sendQuickReply(sender, message.content);
-                                } else {
-                                    sendMessage(sender, {
-                                        text: message.content
+                    let tempID = Math.floor((Math.random() * 1000000) + 1);
+                    Conversationid.update({ fbid: sender }, { $set: { conversationid: tempID } }, function (err, result) {
+                        if (result) {
+                            conversationID = tempID;
+                            build.dialog({
+                                type: 'text',
+                                content: input
+                            }, {
+                                    conversationId: conversationID
+                                })
+                                .then(res => {
+                                    console.log(res);
+                                    conversationID = res.conversation.id;
+                                    res.messages.map((message) => {
+                                        if (message.type === 'quickReplies') {
+                                            sendQuickReply(sender, message.content);
+                                        } else {
+                                            sendMessage(sender, {
+                                                text: message.content
+                                            });
+                                        }
                                     });
-                                }
-                            });
-                        })
-                        .catch((err) => {
-                            sendMessage(sender, {
-                                text: 'Oops, we got an error from Recast.ai, our magic Human Understandinator(tm). Please try again.'
-                            }).catch(console.error);
-                            console.log(err.stack || err);
-                            Conversationid.update({ fbid: sender }, { $set: { conversationid: undefined } });
-                            // conversationID = undefined;
-                        })
+                                })
+                                .catch((err) => {
+                                    sendMessage(sender, {
+                                        text: 'Oops, we got an error from Recast.ai, our magic Human Understandinator(tm). Please try again.'
+                                    }).catch(console.error);
+                                    console.log(err.stack || err);
+                                    Conversationid.update({ fbid: sender }, { $set: { conversationid: undefined } });
+                                    // conversationID = undefined;
+                                })
+                        }
+                    });
                 }
             } else if (res.intents[0].slug === "confirmentry" || res.intents[0].slug === "getcode" || res.intents[0].slug === "verifycode") {
                 // conversationId = (typeof conversationId === 'undefined') ? Math.floor((Math.random() * 1000000) + 1) : conversationId;
