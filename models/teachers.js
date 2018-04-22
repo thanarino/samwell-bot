@@ -17,13 +17,20 @@ let teacherSchema = new Schema({
     createdAt: { type: Date },
     services: {
         google: {
+            accessToken: { type: String },
+            idToken: { type: String },
+            scope: { type: [String] },
+            expiresAt: { type: Number },
             id: { type: String },
             email: { type: String },
             name: { type: String },
             given_name: { type: String },
             family_name: { type: String },
             picture: { type: String },
-            gender: { type: String }
+            gender: { type: String },
+        },
+        resume: {
+            loginTokens: {type: [String]},
         }
     },
     profile: {
