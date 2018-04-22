@@ -338,7 +338,7 @@ app.post("/verify-class-enlisted", (req, res) => {
                     console.log(obj2);
                     if (obj2.teacherList.length > 1) {
                     } else if (obj2.teacherList.length == 1) {
-                        Teachers.findOne({ _id: obj2.teacherList[1] }, function (err3, obj3) {
+                        Teachers.findOne({ _id: obj2.teacherList[0] }, function (err3, obj3) {
                             if (obj3) {
                                 console.log('6');
                                 let toSend = Object.assign({}, {
