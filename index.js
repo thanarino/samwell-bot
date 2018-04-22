@@ -199,7 +199,7 @@ app.post("/verify-code", (req, res) => {
                                     replies: [
                                         {
                                             type: 'text',
-                                            content: 'Do you feel like you belong now?'
+                                            content: 'You must feel like you belong now. '
                                         },
                                         {
                                             type: 'text',
@@ -340,7 +340,6 @@ app.post("/verify-class-enlisted", (req, res) => {
                     } else if (obj2.teacherList.length == 1) {
                         Teachers.findOne({ _id: obj2.teacherList[0] }, function (err3, obj3) {
                             if (obj3) {
-                                console.log('6');
                                 let toSend = Object.assign({}, {
                                     replies: [{
                                         type: 'quickReplies',
@@ -355,7 +354,13 @@ app.post("/verify-class-enlisted", (req, res) => {
                                             }]
                                         }
                                     }],
-                                }, received.conversation);
+                                }, {
+                                        conversation: {
+                                            memory: Object.assign({}, received.conversation.memory, {
+                                                teacher: obj3
+                                            })
+                                        }
+                                    });
                                 res.send(toSend);
                             } else {
                                 let toSend = Object.assign({}, {
