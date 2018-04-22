@@ -9,6 +9,7 @@ let db = mongoose.connect(process.env.MONGODB_URI);
 let Student = require('./models/students');
 let Section = require('./models/sections');
 let Conversationid = require('./models/conversations');
+let Teachers = require('./models/teachers');
 
 const client = new recastai(process.env.REQUEST_TOKEN);
 const build = client.build;
@@ -268,6 +269,7 @@ app.post("/confirm-consultation", (req, res) => {
                     memory: {}
                 }
             });
+        Conversationid.update({ conversationid: received.conversation.id }, { $set: { conversationid: undefined } });
         res.send(toSend);
     } else {
         Section.findOne({
@@ -285,6 +287,7 @@ app.post("/confirm-consultation", (req, res) => {
                             memory: {}
                         }
                     });
+                Conversationid.update({ conversationid: received.conversation.id }, { $set: { conversationid: undefined } });
                 res.send(toSend);
             } else {
                 let toSend = Object.assign({}, {
@@ -322,6 +325,89 @@ app.post("/verify-class-enlisted", (req, res) => {
     let subject = received.conversation.memory.subject.value.toUpperCase().replace(/ /g, '');
     let start_time = received.conversation.memory.start_time;
     let end_time = received.conversation.memory.end_time;
+
+    Conversationid.findOne({ conversationid: req.body.conversation.id }, function (err, obj) {
+        if (obj) {
+            Section.findOne({
+                sectionName: section,
+                subject: subject,
+                studentList: obj.fbid,
+            }, function (err2, obj2) {
+                if (obj2) {
+                    if (obj2.teacherList.length > 1) {
+                        
+                    } else if (obj2.teacherList.length === 1) {
+                        Teachers.findOne({ _id: obj2.teacherList[1] }, function (err3, obj3) {
+                            if (obj3) {
+                                let toSend = Object.assign({}, {
+                                    replies: [{
+                                        type: 'quickReplies',
+                                        content: {
+                                            title: `You want to schedule a consultation with ${obj3.gender === "male" ? `Sir` : `Ma'am`} ${obj3.given_name} ${obj3.family_name}, right?`,
+                                            buttons: [{
+                                                title: 'Yes',
+                                                value: 'Yes'
+                                            }, {
+                                                title: 'No',
+                                                value: 'No'
+                                            }]
+                                        }
+                                    }],
+                                }, received.conversation);
+                                res.send(toSend);
+                            } else {
+                                let toSend = Object.assign({}, {
+                                    replies: [
+                                        {
+                                            type: 'text',
+                                            content: 'This is weird -- I can\'t find the teacher. Contact the administrator to find this rogue Professor.'
+                                        }
+                                    ],
+                                }, {
+                                        conversation: {
+                                            memory: {}
+                                        }
+                                    });
+                                Conversationid.update({ conversationid: received.conversation.id }, { $set: { conversationid: undefined } });
+                                res.send(toSend);
+                            }
+                        })
+                        
+                    } else {
+                        let toSend = Object.assign({}, {
+                            replies: [
+                                {
+                                    type: 'text',
+                                    content: 'This class has no teachers! How can this happen? Please blame the administrator.'
+                                }
+                            ],
+                        }, {
+                                conversation: {
+                                    memory: {}
+                                }
+                            });
+                        Conversationid.update({ conversationid: received.conversation.id }, { $set: { conversationid: undefined } });
+                        res.send(toSend);
+                    }
+                } else if (!obj2) {
+                    let toSend = Object.assign({}, {
+                        replies: [
+                            {
+                                type: 'text',
+                                content: 'It seems that you are not yet enlisted in this section yet. Please ask your teacher for the class code.'
+                            }
+                        ],
+                    }, {
+                            conversation: {
+                                memory: {}
+                            }
+                        });
+                    Conversationid.update({ conversationid: received.conversation.id }, { $set: { conversationid: undefined } });
+                    res.send(toSend);
+                }
+            })
+        }
+    })
 })
 
 analyzeEntities = (sender, res, input) => {
