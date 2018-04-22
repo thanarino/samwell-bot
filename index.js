@@ -356,9 +356,14 @@ app.post("/verify-class-enlisted", (req, res) => {
                                     }],
                                 }, {
                                         conversation: {
-                                            memory: Object.assign({}, received.conversation.memory, {
-                                                teacher: obj3
-                                            })
+                                            memory: {
+                                                teacher: obj3,
+                                                section: received.conversation.memory.section,
+                                                subject: received.conversation.memory.subject,
+                                                interval: received.conversation.memory.interval,
+                                                start_time: received.conversation.memory.start_time,
+                                                end_time: received.conversation.memory.end_time,
+                                            }
                                         }
                                     });
                                 res.send(toSend);
