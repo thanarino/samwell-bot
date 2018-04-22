@@ -326,23 +326,18 @@ app.post("/verify-class-enlisted", (req, res) => {
     let start_time = received.conversation.memory.start_time;
     let end_time = received.conversation.memory.end_time;
 
-    console.log('1');
 
     Conversationid.findOne({ conversationid: req.body.conversation.id }, function (err, obj) {
         if (obj) {
-            console.log('2');
             Section.findOne({
                 sectionName: section,
                 subject: subject,
                 studentList: obj.fbid,
             }, function (err2, obj2) {
                 if (obj2) {
-                    console.log('3');
+                    console.log(obj2);
                     if (obj2.teacherList.length > 1) {
-                        console.log('4');
-                        console.log(obj2.teacherList.length);
                     } else if (obj2.teacherList.length == 1) {
-                        console.log('5');
                         Teachers.findOne({ _id: obj2.teacherList[1] }, function (err3, obj3) {
                             if (obj3) {
                                 console.log('6');
@@ -363,7 +358,6 @@ app.post("/verify-class-enlisted", (req, res) => {
                                 }, received.conversation);
                                 res.send(toSend);
                             } else {
-                                console.log('7');
                                 let toSend = Object.assign({}, {
                                     replies: [
                                         {
@@ -381,7 +375,6 @@ app.post("/verify-class-enlisted", (req, res) => {
                             }
                         })
                     } else {
-                        console.log('8');
                         let toSend = Object.assign({}, {
                             replies: [
                                 {
@@ -398,7 +391,6 @@ app.post("/verify-class-enlisted", (req, res) => {
                         res.send(toSend);
                     }
                 } else if (!obj2) {
-                    console.log('9');
                     let toSend = Object.assign({}, {
                         replies: [
                             {
