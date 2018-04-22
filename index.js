@@ -109,6 +109,8 @@ app.post("/verify-class", (req, res) => {
     let section = received.conversation.memory.section.value.toUpperCase().replace(/ /g, '');
     let subject = received.conversation.memory.subject.value.toUpperCase().replace(/ /g, '');
 
+    console.log(req.body);
+
     let found = Section.findOne({ sectionName: section, subject: subject }, function (err, obj) {
         if (obj) {
             let toSend = Object.assign({}, {
