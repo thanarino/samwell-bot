@@ -14,7 +14,7 @@ let sectionSchema = new Schema({
     userID: { type: String },
     sectionName: { type: String },
     studentList: { type: [String] },
-    teacherList: { type: String },
+    teacherList: { type: [String] },
     subject: { type: String },
     semester: semesterSchema,
     classType: { type: String },
