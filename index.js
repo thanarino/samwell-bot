@@ -340,8 +340,8 @@ app.post("/verify-class-enlisted", (req, res) => {
                     console.log('3');
                     if (obj2.teacherList.length > 1) {
                         console.log('4');
-                        console.log(obj2.teacherList);
-                    } else if (obj2.teacherList.length === 1) {
+                        console.log(obj2.teacherList.length);
+                    } else if (obj2.teacherList.length == 1) {
                         console.log('5');
                         Teachers.findOne({ _id: obj2.teacherList[1] }, function (err3, obj3) {
                             if (obj3) {
