@@ -426,8 +426,8 @@ app.post("/verify-class-enlisted", (req, res) => {
 
 checkConsultationHoursConflict = (time, u_start, u_end, t_id) => {
     //format consultation hours of professor
-    let db_start = moment(time.start, 'hh:mm').set({ 'year': u_start.get('year'), 'month': u_start.get('month'), 'day': u_start.get('day') });
-    let db_end = moment(time.end, 'hh:mm').set({ 'year': u_end.get('year'), 'month': u_end.get('month'), 'day': u_end.get('day') });
+    let db_start = moment(time.start, 'hh:mm').set({ 'year': u_start.get('year'), 'month': u_start.get('month'), 'date': u_start.get('date') });
+    let db_end = moment(time.end, 'hh:mm').set({ 'year': u_end.get('year'), 'month': u_end.get('month'), 'date': u_end.get('date') });
 
     console.log(`db_start: ${db_start}`);
     console.log(`db_end: ${db_end}`);
