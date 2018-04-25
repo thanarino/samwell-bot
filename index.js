@@ -453,6 +453,9 @@ checkConsultationConflict = (u_start, u_end, t_id) => {
         console.log(`docs:`);
         console.log(docs);
         console.log(docs.length);
+        if (err) {
+            console.log(err);
+        }
         if (docs.length > 0) {
             // teacher has consultations in that day
             docs.map((consultation) => {
