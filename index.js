@@ -1,5 +1,3 @@
-import { Conversation } from "recastai";
-
 let express = require("express");
 let request = require("request-promise");
 let bodyParser = require("body-parser");
