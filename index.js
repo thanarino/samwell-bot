@@ -523,17 +523,7 @@ app.post("/verify-consultation-hours", (req, res) => {
                 Conversationid.update({ conversationid: received.conversation.id }, { $set: { conversationid: undefined } });
                 res.send(toSend);
             } else {
-                let tripcheck = [];
-                day.time.map((time) => {
-                    console.log(time);
-                    if (checkConsultationHoursConflict(time, u_start, u_end, t_id)) { 
-                        tripcheck = true;
-                        break;
-                    } else {
-                        tripcheck = false;
-                    }
-                    console.log(tripcheck);
-                });
+                let tripcheck = day.time.some((time) => checkConsultationHoursConflict(time, u_start, u_end, t_id));
                 if (tripcheck) {
                     let tripcheck2 = checkConsultationConflict(u_start, u_end, t_id);
                     if (_.includes(tripcheck2, true)) {
