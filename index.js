@@ -477,9 +477,7 @@ checkConsultationConflict = (u_start, u_end, t_id) => {
                 }
             });
         } else {
-            console.log("went here");
             result.push(true);
-            console.log(result);
         }
     }).then(() => {
         console.log(`result: ${result}`);
@@ -539,7 +537,6 @@ app.post("/verify-consultation-hours", (req, res) => {
                 if (tripcheck) {
                     let tripcheck2 = checkConsultationConflict(u_start, u_end, t_id);
                     console.log(tripcheck2);
-                    console.log(tripcheck2.length);
                     if (_.includes(tripcheck2, true)) {
                         //schedule here
 
