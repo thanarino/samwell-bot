@@ -481,9 +481,11 @@ checkConsultationConflict = (u_start, u_end, t_id) => {
             result.push(true);
             console.log(result);
         }
+    }).then(() => {
+        console.log(`result: ${result}`);
+        return result;
     });
-    console.log(`result: ${result}`);
-    return result;
+    
 }
 
 app.post("/verify-consultation-hours", (req, res) => {
