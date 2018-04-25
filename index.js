@@ -477,12 +477,11 @@ checkConsultationConflict = (u_start, u_end, t_id) => {
                 }
             });
         } else {
+            console.log("went here");
             result.push(true);
         }
     });
-
     console.log(`result: ${result}`);
-
     return result;
 }
 
