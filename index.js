@@ -526,7 +526,12 @@ app.post("/verify-consultation-hours", (req, res) => {
                 let tripcheck = [];
                 day.time.map((time) => {
                     console.log(time);
-                    tripcheck = checkConsultationHoursConflict(time, u_start, u_end, t_id);
+                    if (checkConsultationHoursConflict(time, u_start, u_end, t_id)) { 
+                        tripcheck = true;
+                        break;
+                    } else {
+                        tripcheck = false;
+                    }
                     console.log(tripcheck);
                 });
                 if (_.includes(tripcheck, true)) {
