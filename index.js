@@ -526,6 +526,7 @@ app.post("/verify-consultation-hours", (req, res) => {
                 let tripcheck = day.time.some((time) => checkConsultationHoursConflict(time, u_start, u_end, t_id));
                 if (tripcheck) {
                     let tripcheck2 = checkConsultationConflict(u_start, u_end, t_id);
+                    console.log(tripcheck2);
                     if (_.includes(tripcheck2, true)) {
                         //schedule here
 
