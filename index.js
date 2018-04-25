@@ -1,15 +1,19 @@
+import { Conversation } from "recastai";
+
 let express = require("express");
 let request = require("request-promise");
 let bodyParser = require("body-parser");
 let mongoose = require('mongoose');
 let recastai = require('recastai').default;
 let moment = require('moment');
+let _ = require('lodash');
 
 let db = mongoose.connect(process.env.MONGODB_URI);
 let Student = require('./models/students');
 let Section = require('./models/sections');
 let Conversationid = require('./models/conversations');
 let Teachers = require('./models/teachers');
+let Consultations = require('./models/consultations');
 
 const client = new recastai(process.env.REQUEST_TOKEN);
 const build = client.build;
@@ -337,6 +341,7 @@ app.post("/verify-class-enlisted", (req, res) => {
                 if (obj2) {
                     console.log(obj2);
                     if (obj2.teacherList.length > 1) {
+                        //if many teachers in a classroom
                     } else if (obj2.teacherList.length == 1) {
                         Teachers.findOne({ _id: obj2.teacherList[0] }, function (err3, obj3) {
                             if (obj3) {
@@ -419,6 +424,179 @@ app.post("/verify-class-enlisted", (req, res) => {
             })
         }
     })
+});
+
+checkConsultationHoursConflict = (time, u_start, u_end, t_id) => {
+    //format consultation hours of professor
+    let db_start = moment(time.start, 'hh:mm').set({ 'year': u_start.get('year'), 'month': u_start.get('month'), 'day': u_start.get('day') });
+    let db_end = moment(time.end, 'hh:mm').set({ 'year': u_end.get('year'), 'month': u_end.get('month'), 'day': u_end.get('day') });
+
+    if (db_start - u_start <= 0) {  // consultation hours start before consultation
+        if (u_end - db_end <= 0) {  // consultation hours end after consultation
+            return true;
+        } else {
+            return false
+        }
+    } else {
+        return false;
+    }
+
+};
+
+checkConsultationConflict = (u_start, u_end, t_id) => {
+    // check if scheduled consultation hour is not occupied by other consultation hours
+    Consultations.find({ teacherID: t_id, isApprovedByTeacher: true, isDone: false, date: u_start.dayOfYear(), year: u_start.get('year') }, function (err, res) {
+        if (res.length > 0) {
+            // teacher has consultations in that day
+            res.map((consultation) => {
+                let doy = moment().dayOfYear(consultation.date).set({ 'year': consultation.year });
+                let c_start = moment(consultation.startTime, 'hh:mm').set({ 'year': doy.get('year'), 'month': doy.get('month'), 'day': doy.get('day') });
+                let c_end = moment(consultation.endTime, 'hh:mm').set({ 'year': doy.get('year'), 'month': doy.get('month'), 'day': doy.get('day') });
+
+                // check if start and end of user consultation is in between db consultations
+                // check if start and end of db consultation is in between user consultations
+
+                if (u_start.inBetween(c_start, c_end) || u_end.isBetween(c_start, c_end)) {
+                    return false
+                } else {
+                    if (c_start.inBetween(u_start, u_end) || c_end.isBetween(u_start, u_end)) {
+                        return false
+                    } else {
+                        return true
+                    }
+                }
+                
+            });
+        } else {
+            return true
+        }
+    });
+}
+
+app.post("/verify-consultation-hours", (req, res) => {
+    let received = req.body;
+
+    let section = received.conversation.memory.section.value.toUpperCase().replace(/ /g, '');
+    let subject = received.conversation.memory.subject.value.toUpperCase().replace(/ /g, '');
+    let start_time = received.conversation.memory.start_time;
+    let end_time = received.conversation.memory.end_time;
+    let teacher = received.conversation.memory.teacher;
+
+    let t_id = received.conversation.memory.teacher._id;
+
+    //check if time falls under consultation hours of prof
+
+    //format user inputted start and end times
+    let u_start = moment(received.conversation.memory.start_time);
+    let u_end = moment(received.conversation.memory.end_time);
+
+    if (u_end - u_start <= 0) {
+        let toSend = Object.assign({}, {
+            replies: [
+                {
+                    type: 'text',
+                    content: 'Give me the Eye of Agamotto and I\'ll schedule you on that timeslot. Otherwise, feel free to try again. :)'
+                }
+            ],
+        }, { conversation: { memory: {} } });
+        Conversationid.update({ conversationid: received.conversation.id }, { $set: { conversationid: undefined } });
+        res.send(toSend);
+    }
+
+    let weekday = moment(received.conversation.memory.start_time).format('dddd');
+    received.conversation.memory.teacher.consultationHours.map((day) => {
+        if (day.fullName === weekday) {
+            day.time.map((time) => {
+                
+                let tripcheck = checkConsultationHoursConflict(time, u_start, u_end, t_id);
+                if (_.includes(tripcheck, true)) {
+                    if (_.includes(checkConsultationConflict(u_start, u_end, t_id), true)) {
+                        //schedule here
+
+                        Conversationid.findOne({ conversationid: received.conversation.id }, function (err, obj) {
+                            if (obj) {
+                                Consultations.create({
+                                    userID: obj.fbid,
+                                    studentID: obj.fbid,
+                                    teacherID: t_id,
+                                    startTime: u_start.format('HH:mm'),
+                                    endTime: u_end.format('HH:mm'),
+                                    date: u_start.dayOfYear(),
+                                    year: u_start.get('year'),
+                                    isDone: false,
+                                    isDeleted: false,
+                                    isApprovedByStudent: true,
+                                    isApprovedByTeacher: false,
+                                    createdAt: new Date()
+                                }, function (err, res) {
+                                    if (err) {
+                                        let toSend = Object.assign({}, {
+                                            replies: [
+                                                {
+                                                    type: 'text',
+                                                    content: 'Hmm, I think there\'s a problem with my memory right now. Please try again later.'
+                                                }
+                                            ],
+                                        }, { conversation: { memory: {} } });
+                                        Conversationid.update({ conversationid: received.conversation.id }, { $set: { conversationid: undefined } });
+                                        res.send(toSend);
+                                    } else {
+                                        let toSend = Object.assign({}, {
+                                            replies: [
+                                                {
+                                                    type: 'text',
+                                                    content: 'Alright! Don\'t forget your consultation!'
+                                                }
+                                            ],
+                                        }, { conversation: { memory: {} } });
+                                        Conversationid.update({ conversationid: received.conversation.id }, { $set: { conversationid: undefined } });
+                                        res.send(toSend);
+                                    }
+                                });
+                            } else {
+                                let toSend = Object.assign({}, {
+                                    replies: [
+                                        {
+                                            type: 'text',
+                                            content: 'There seems to be a problem :\\ No worries, just try again later.'
+                                        }
+                                    ],
+                                }, { conversation: { memory: {} } });
+                                Conversationid.update({ conversationid: received.conversation.id }, { $set: { conversationid: undefined } });
+                                res.send(toSend);
+                            }
+                        });                        
+                    } else {
+                        //error, conflict with other consultations
+                        let toSend = Object.assign({}, {
+                            replies: [
+                                {
+                                    type: 'text',
+                                    content: 'Looks like your prof\'s in demand. Please schedule in another timeslot.'
+                                }
+                            ],
+                        }, { conversation: { memory: {} } });
+                        Conversationid.update({ conversationid: received.conversation.id }, { $set: { conversationid: undefined } });
+                        res.send(toSend);
+                        //TODO: SEND CONSULTATION HOURS OF PROFESSOR
+                    }
+                } else {
+                    //error, conflict with consultation hours
+                    let toSend = Object.assign({}, {
+                        replies: [
+                            {
+                                type: 'text',
+                                content: 'Remember that you can only schedule a consultation within the professor\'s consultation hours. Please schedule in another timeslot.'
+                            }
+                        ],
+                    }, { conversation: { memory: {} } });
+                    Conversationid.update({ conversationid: received.conversation.id }, { $set: { conversationid: undefined } });
+                    res.send(toSend);
+                    //TODO: SEND CONSULTATION HOURS OF PROFESSOR
+                }
+            });
+        }
+    });
 })
 
 analyzeEntities = (sender, res, input) => {
