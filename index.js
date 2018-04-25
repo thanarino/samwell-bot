@@ -447,9 +447,10 @@ checkConsultationHoursConflict = (time, u_start, u_end, t_id) => {
 };
 
 checkConsultationConflict = (u_start, u_end, t_id) => {
+    let result = [];
     // check if scheduled consultation hour is not occupied by other consultation hours
     Consultations.find({ teacherID: t_id, isApprovedByTeacher: true, isDone: false, date: u_start.dayOfYear(), year: u_start.get('year') }, function (err, res) {
-        console.log(res);
+        console.log(`res: ${res}`);
         if (res.length > 0) {
             // teacher has consultations in that day
             res.map((consultation) => {
@@ -461,20 +462,21 @@ checkConsultationConflict = (u_start, u_end, t_id) => {
                 // check if start and end of db consultation is in between user consultations
 
                 if (u_start.inBetween(c_start, c_end) || u_end.isBetween(c_start, c_end)) {
-                    return false
+                    result.push(false);
                 } else {
                     if (c_start.inBetween(u_start, u_end) || c_end.isBetween(u_start, u_end)) {
-                        return false
+                        result.push(false);
                     } else {
-                        return true
+                        result.push(true);
                     }
                 }
-                
             });
         } else {
-            return true
+            result.push(true);
         }
     });
+
+    return result;
 }
 
 app.post("/verify-consultation-hours", (req, res) => {
