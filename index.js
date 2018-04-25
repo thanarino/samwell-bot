@@ -478,6 +478,8 @@ checkConsultationConflict = (u_start, u_end, t_id) => {
         }
     });
 
+    console.log(`result: ${result}`);
+
     return result;
 }
 
