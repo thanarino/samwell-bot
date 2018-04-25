@@ -479,6 +479,7 @@ checkConsultationConflict = (u_start, u_end, t_id) => {
         } else {
             console.log("went here");
             result.push(true);
+            console.log(result);
         }
     });
     console.log(`result: ${result}`);
