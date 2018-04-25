@@ -429,6 +429,11 @@ checkConsultationHoursConflict = (time, u_start, u_end, t_id) => {
     let db_start = moment(time.start, 'hh:mm').set({ 'year': u_start.get('year'), 'month': u_start.get('month'), 'day': u_start.get('day') });
     let db_end = moment(time.end, 'hh:mm').set({ 'year': u_end.get('year'), 'month': u_end.get('month'), 'day': u_end.get('day') });
 
+    console.log(`db_start: ${db_start}`);
+    console.log(`db_end: ${db_end}`);
+    console.log(`u_start: ${u_start}`);
+    console.log(`u_end: ${u_end}`);
+
     if (db_start - u_start <= 0) {  // consultation hours start before consultation
         if (u_end - db_end <= 0) {  // consultation hours end after consultation
             return true;
