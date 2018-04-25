@@ -450,7 +450,9 @@ checkConsultationConflict = (u_start, u_end, t_id) => {
     let result = [];
     // check if scheduled consultation hour is not occupied by other consultation hours
     Consultations.find({ teacherID: t_id, isApprovedByTeacher: true, isDone: false, date: u_start.dayOfYear(), year: u_start.get('year') }, function (err, docs) {
-        console.log(`docs: ${docs}`);
+        console.log(`docs:`);
+        console.log(docs);
+        console.log(docs.length);
         if (docs.length > 0) {
             // teacher has consultations in that day
             docs.map((consultation) => {
