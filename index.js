@@ -534,7 +534,7 @@ app.post("/verify-consultation-hours", (req, res) => {
                     }
                     console.log(tripcheck);
                 });
-                if (_.includes(tripcheck, true)) {
+                if (tripcheck) {
                     let tripcheck2 = checkConsultationConflict(u_start, u_end, t_id);
                     if (_.includes(tripcheck2, true)) {
                         //schedule here
