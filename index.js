@@ -502,10 +502,12 @@ app.post("/verify-consultation-hours", (req, res) => {
     }
 
     let weekday = moment(received.conversation.memory.start_time).format('dddd');
+    console.log(weekday);
     received.conversation.memory.teacher.consultationHours.map((day) => {
+        console.log(day);
         if (day.fullName === weekday) {
             day.time.map((time) => {
-                
+                console.log(time);
                 let tripcheck = checkConsultationHoursConflict(time, u_start, u_end, t_id);
                 if (_.includes(tripcheck, true)) {
                     if (_.includes(checkConsultationConflict(u_start, u_end, t_id), true)) {
