@@ -447,43 +447,44 @@ checkConsultationHoursConflict = (time, u_start, u_end, t_id) => {
 };
 
 checkConsultationConflict = (u_start, u_end, t_id) => {
-    var result = [];
-    // check if scheduled consultation hour is not occupied by other consultation hours
-    Consultations.find({ teacherID: t_id, isApprovedByTeacher: true, isDone: false, date: u_start.dayOfYear(), year: u_start.get('year') }, function (err, docs) {
-        console.log(`docs:`);
-        console.log(docs);
-        console.log(docs.length);
-        if (err) {
-            console.log(err);
-        }
-        if (docs.length > 0) {
-            // teacher has consultations in that day
-            docs.map((consultation) => {
-                let doy = moment().dayOfYear(consultation.date).set({ 'year': consultation.year });
-                let c_start = moment(consultation.startTime, 'hh:mm').set({ 'year': doy.get('year'), 'month': doy.get('month'), 'day': doy.get('day') });
-                let c_end = moment(consultation.endTime, 'hh:mm').set({ 'year': doy.get('year'), 'month': doy.get('month'), 'day': doy.get('day') });
+    return new Promise((resolve, reject) => {
+        var result = [];
+        // check if scheduled consultation hour is not occupied by other consultation hours
+        Consultations.find({ teacherID: t_id, isApprovedByTeacher: true, isDone: false, date: u_start.dayOfYear(), year: u_start.get('year') }, function (err, docs) {
+            console.log(`docs:`);
+            console.log(docs);
+            console.log(docs.length);
+            if (err) {
+                console.log(err);
+            }
+            if (docs.length > 0) {
+                // teacher has consultations in that day
+                docs.map((consultation) => {
+                    let doy = moment().dayOfYear(consultation.date).set({ 'year': consultation.year });
+                    let c_start = moment(consultation.startTime, 'hh:mm').set({ 'year': doy.get('year'), 'month': doy.get('month'), 'day': doy.get('day') });
+                    let c_end = moment(consultation.endTime, 'hh:mm').set({ 'year': doy.get('year'), 'month': doy.get('month'), 'day': doy.get('day') });
 
-                // check if start and end of user consultation is in between db consultations
-                // check if start and end of db consultation is in between user consultations
+                    // check if start and end of user consultation is in between db consultations
+                    // check if start and end of db consultation is in between user consultations
 
-                if (u_start.inBetween(c_start, c_end) || u_end.isBetween(c_start, c_end)) {
-                    result.push(false);
-                } else {
-                    if (c_start.inBetween(u_start, u_end) || c_end.isBetween(u_start, u_end)) {
+                    if (u_start.inBetween(c_start, c_end) || u_end.isBetween(c_start, c_end)) {
                         result.push(false);
                     } else {
-                        result.push(true);
+                        if (c_start.inBetween(u_start, u_end) || c_end.isBetween(u_start, u_end)) {
+                            result.push(false);
+                        } else {
+                            result.push(true);
+                        }
                     }
-                }
-            });
-        } else {
-            result.push(true);
-        }
-    }).then(() => {
-        console.log(`result: ${result}`);
-        return result;
-    });
-    
+                });
+            } else {
+                result.push(true);
+            }
+        }).then(() => {
+            console.log(`result: ${result}`);
+            resolve(result);
+        });
+    })
 }
 
 app.post("/verify-consultation-hours", (req, res) => {
@@ -535,7 +536,10 @@ app.post("/verify-consultation-hours", (req, res) => {
             } else {
                 let tripcheck = day.time.some((time) => checkConsultationHoursConflict(time, u_start, u_end, t_id));
                 if (tripcheck) {
-                    let tripcheck2 = checkConsultationConflict(u_start, u_end, t_id);
+                    var tripcheck2;
+                    checkConsultationConflict(u_start, u_end, t_id).then((result) => {
+                        tripcheck2 = result;
+                    });
                     console.log(tripcheck2);
                     if (_.includes(tripcheck2, true)) {
                         //schedule here
