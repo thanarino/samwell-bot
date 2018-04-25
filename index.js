@@ -523,9 +523,10 @@ app.post("/verify-consultation-hours", (req, res) => {
                 Conversationid.update({ conversationid: received.conversation.id }, { $set: { conversationid: undefined } });
                 res.send(toSend);
             } else {
+                let tripcheck = [];
                 day.time.map((time) => {
                     console.log(time);
-                    let tripcheck = checkConsultationHoursConflict(time, u_start, u_end, t_id);
+                    tripcheck = checkConsultationHoursConflict(time, u_start, u_end, t_id);
                     console.log(tripcheck);
                 });
                 if (_.includes(tripcheck, true)) {
