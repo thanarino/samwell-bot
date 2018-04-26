@@ -458,6 +458,7 @@ checkConsultationConflict = (u_start, u_end, t_id) => {
                 console.log(err);
             }
             if (docs.length > 0) {
+                console.log('went here');
                 // teacher has consultations in that day
                 docs.map((consultation) => {
                     let doy = moment().dayOfYear(consultation.date).set({ 'year': consultation.year });
@@ -559,7 +560,7 @@ app.post("/verify-consultation-hours", (req, res) => {
                                         isApprovedByStudent: true,
                                         isApprovedByTeacher: false,
                                         createdAt: new Date()
-                                    }, function (err, res) {
+                                    }, function (err, returned) {
                                         if (err) {
                                             let toSend = Object.assign({}, {
                                                 replies: [
