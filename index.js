@@ -449,11 +449,8 @@ checkConsultationHoursConflict = (time, u_start, u_end, t_id) => {
 checkConsultationConflict = (u_start, u_end, t_id) => {
     return new Promise((resolve, reject) => {
         var result = [];
-        console.log(t_id);
-        let m_u_start = moment(u_start);
-        let m_u_end = moment(u_end);
         // check if scheduled consultation hour is not occupied by other consultation hours
-        Consultations.find({ teacherID: t_id, isApprovedByTeacher: true, isDone: false, date: m_u_start.dayOfYear(), year: m_u_start.get('year') }, function (err, docs) {
+        Consultations.find({ teacherID: t_id, isApprovedByTeacher: true, isDone: false, date: u_start.dayOfYear(), year: u_start.get('year') }, function (err, docs) {
             console.log(`docs:`);
             console.log(docs);
             console.log(docs.length);
@@ -476,18 +473,13 @@ checkConsultationConflict = (u_start, u_end, t_id) => {
                         'date': doy.get('date')
                     });
 
-                    console.log(`c_start: ${c_start}`);
-                    console.log(`c_end: ${c_end}`);
-                    console.log(`m_u_start: ${m_u_start}`);
-                    console.log(`m_u_end: ${m_u_end}`);
-
                     // check if start and end of user consultation is in between db consultations
                     // check if start and end of db consultation is in between user consultations
 
-                    if ((m_u_start.inBetween(c_start, c_end) || m_u_end.isBetween(c_start, c_end)) || (c_start.isSame(m_u_start) || c_end.isSame(m_u_end))) {
+                    if ((u_start.isBetween(c_start, c_end) || u_end.isBetween(c_start, c_end)) || (c_start.isSame(u_start) || c_end.isSame(u_end))) {
                         result.push(false);
                     } else {
-                        if (c_start.inBetween(m_u_start, m_u_end) || c_end.isBetween(m_u_start, m_u_end)) {
+                        if (c_start.isBetween(u_start, u_end) || c_end.isBetween(u_start, u_end)) {
                             result.push(false);
                         } else {
                             result.push(true);
