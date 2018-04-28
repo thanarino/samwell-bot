@@ -465,6 +465,11 @@ checkConsultationConflict = (u_start, u_end, t_id) => {
                     let c_start = moment(consultation.startTime, 'hh:mm').set({ 'year': doy.get('year'), 'month': doy.get('month'), 'day': doy.get('day') });
                     let c_end = moment(consultation.endTime, 'hh:mm').set({ 'year': doy.get('year'), 'month': doy.get('month'), 'day': doy.get('day') });
 
+                    console.log(`s_start: ${s_start}`);
+                    console.log(`s_end: ${s_end}`);
+                    console.log(`u_start: ${u_start}`);
+                    console.log(`u_end: ${u_end}`);
+
                     // check if start and end of user consultation is in between db consultations
                     // check if start and end of db consultation is in between user consultations
 
