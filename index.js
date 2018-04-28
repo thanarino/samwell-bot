@@ -484,10 +484,10 @@ checkConsultationConflict = (u_start, u_end, t_id) => {
                     // check if start and end of user consultation is in between db consultations
                     // check if start and end of db consultation is in between user consultations
 
-                    if ((u_start.inBetween(c_start, c_end) || u_end.isBetween(c_start, c_end)) || (c_start.isSame(u_start) || c_end.isSame(u_end))) {
+                    if ((m_u_start.inBetween(c_start, c_end) || m_u_end.isBetween(c_start, c_end)) || (c_start.isSame(m_u_start) || c_end.isSame(m_u_end))) {
                         result.push(false);
                     } else {
-                        if (c_start.inBetween(u_start, u_end) || c_end.isBetween(u_start, u_end)) {
+                        if (c_start.inBetween(m_u_start, m_u_end) || c_end.isBetween(m_u_start, m_u_end)) {
                             result.push(false);
                         } else {
                             result.push(true);
