@@ -557,6 +557,12 @@ app.post("/verify-consultation-hours", (req, res) => {
                                 if (classFound) {
                                     let sem_start = moment().dayOfYear(classFound.semester.start).set({ 'year': classFound.semester.startYear });
                                     let sem_end = moment().dayOfYear(classFound.semester.end).set({ 'year': classFound.semester.endYear });
+                                    
+                                    console.log(`sem_start: ${sem_start}`);
+                                    console.log(`sem_end: ${sem_end}`);
+                                    console.log(`u_start: ${u_start}`);
+                                    console.log(`u_end: ${u_end}`);
+                                    
                                     if (u_start - sem_start > 0) {
                                         let toSend = Object.assign({}, {
                                             replies: [{
