@@ -449,8 +449,6 @@ checkConsultationHoursConflict = (time, u_start, u_end, t_id) => {
 checkConsultationConflict = (u_start, u_end, t_id) => {
     return new Promise((resolve, reject) => {
         var result = [];
-        console.log(u_start);
-        console.log(u_end);
         console.log(t_id);
         let u_start = moment(u_start);
         let u_end = moment(u_end);
