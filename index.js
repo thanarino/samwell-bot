@@ -450,10 +450,10 @@ checkConsultationConflict = (u_start, u_end, t_id) => {
     return new Promise((resolve, reject) => {
         var result = [];
         console.log(t_id);
-        let u_start = moment(u_start);
-        let u_end = moment(u_end);
+        let m_u_start = moment(u_start);
+        let m_u_end = moment(u_end);
         // check if scheduled consultation hour is not occupied by other consultation hours
-        Consultations.find({ teacherID: t_id, isApprovedByTeacher: true, isDone: false, date: u_start.dayOfYear(), year: u_start.get('year') }, function (err, docs) {
+        Consultations.find({ teacherID: t_id, isApprovedByTeacher: true, isDone: false, date: m_u_start.dayOfYear(), year: m_u_start.get('year') }, function (err, docs) {
             console.log(`docs:`);
             console.log(docs);
             console.log(docs.length);
@@ -478,8 +478,8 @@ checkConsultationConflict = (u_start, u_end, t_id) => {
 
                     console.log(`c_start: ${c_start}`);
                     console.log(`c_end: ${c_end}`);
-                    console.log(`u_start: ${u_start}`);
-                    console.log(`u_end: ${u_end}`);
+                    console.log(`m_u_start: ${m_u_start}`);
+                    console.log(`m_u_end: ${m_u_end}`);
 
                     // check if start and end of user consultation is in between db consultations
                     // check if start and end of db consultation is in between user consultations
