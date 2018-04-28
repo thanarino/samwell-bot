@@ -607,6 +607,7 @@ app.post("/verify-consultation-hours", (req, res) => {
                                         }, function (err, obj) {
                                             if (obj) {
                                                 Consultations.create({
+                                                    _id: (Math.random() * 1e20).toString(36),
                                                     userID: obj.fbid,
                                                     studentID: obj.fbid,
                                                     teacherID: t_id,

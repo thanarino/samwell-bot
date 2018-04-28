@@ -2,6 +2,7 @@ let mongoose = require('mongoose');
 let Schema = mongoose.Schema;
 
 let consultationSchema = new Schema({
+    _id: { type: String },
     userID: { type: String },
     studentID: { type: String },
     teacherID: { type: String },
