@@ -563,7 +563,7 @@ app.post("/verify-consultation-hours", (req, res) => {
                                     console.log(`u_start: ${u_start}`);
                                     console.log(`u_end: ${u_end}`);
                                     
-                                    if (u_start - sem_start > 0) {
+                                    if (sem_start - u_start > 0) {
                                         let toSend = Object.assign({}, {
                                             replies: [{
                                                 type: 'text',
@@ -582,7 +582,7 @@ app.post("/verify-consultation-hours", (req, res) => {
                                             }
                                         });
                                         res.send(toSend);
-                                    } else if (u_end - sem_end < 0) {
+                                    } else if (sem_end - u_end < 0) {
                                         let toSend = Object.assign({}, {
                                             replies: [{
                                                 type: 'text',
