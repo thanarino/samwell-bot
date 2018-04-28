@@ -648,8 +648,11 @@ app.post("/verify-consultation-hours", (req, res) => {
                                                         $set: {
                                                             conversationid: undefined
                                                         }
+                                                        }, (err, raw) => {
+                                                            if (!err) {
+                                                            res.send(toSend);
+                                                        }
                                                     });
-                                                    res.send(toSend);
                                                 }
                                             });
                                         } else {
