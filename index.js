@@ -465,8 +465,8 @@ checkConsultationConflict = (u_start, u_end, t_id) => {
                     let c_start = moment(consultation.startTime, 'hh:mm').set({ 'year': doy.get('year'), 'month': doy.get('month'), 'day': doy.get('day') });
                     let c_end = moment(consultation.endTime, 'hh:mm').set({ 'year': doy.get('year'), 'month': doy.get('month'), 'day': doy.get('day') });
 
-                    console.log(`s_start: ${s_start}`);
-                    console.log(`s_end: ${s_end}`);
+                    console.log(`c_start: ${c_start}`);
+                    console.log(`c_end: ${c_end}`);
                     console.log(`u_start: ${u_start}`);
                     console.log(`u_end: ${u_end}`);
 
