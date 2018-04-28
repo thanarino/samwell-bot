@@ -545,7 +545,7 @@ app.post("/verify-consultation-hours", (req, res) => {
                         if (_.includes(tripcheck2, true)) {
                             //schedule here
 
-                            Section.findOne({ secctionName: section, subject: subject }, (err, classFound) => {
+                            Section.findOne({ sectionName: section, subject: subject }, (err, classFound) => {
                                 if (classFound) {
                                     Conversationid.findOne({
                                         conversationid: received.conversation.id
