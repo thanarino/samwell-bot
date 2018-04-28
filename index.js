@@ -449,6 +449,8 @@ checkConsultationHoursConflict = (time, u_start, u_end, t_id) => {
 checkConsultationConflict = (u_start, u_end, t_id) => {
     return new Promise((resolve, reject) => {
         var result = [];
+        let u_start = moment(u_start);
+        let u_end = moment(u_end);
         // check if scheduled consultation hour is not occupied by other consultation hours
         Consultations.find({ teacherID: t_id, isApprovedByTeacher: true, isDone: false, date: u_start.dayOfYear(), year: u_start.get('year') }, function (err, docs) {
             console.log(`docs:`);
@@ -462,8 +464,16 @@ checkConsultationConflict = (u_start, u_end, t_id) => {
                 // teacher has consultations in that day
                 docs.map((consultation) => {
                     let doy = moment().dayOfYear(consultation.date).set({ 'year': consultation.year });
-                    let c_start = moment(consultation.startTime, 'hh:mm').set({ 'year': doy.get('year'), 'month': doy.get('month'), 'day': doy.get('day') });
-                    let c_end = moment(consultation.endTime, 'hh:mm').set({ 'year': doy.get('year'), 'month': doy.get('month'), 'day': doy.get('day') });
+                    let c_start = moment(consultation.startTime, 'hh:mm').set({
+                        'year': doy.get('year'),
+                        'month': doy.get('month'),
+                        'date': doy.get('date')
+                    });
+                    let c_end = moment(consultation.endTime, 'hh:mm').set({
+                        'year': doy.get('year'),
+                        'month': doy.get('month'),
+                        'date': doy.get('date')
+                    });
 
                     console.log(`c_start: ${c_start}`);
                     console.log(`c_end: ${c_end}`);
