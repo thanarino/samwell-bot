@@ -468,7 +468,7 @@ checkConsultationConflict = (u_start, u_end, t_id) => {
                     // check if start and end of user consultation is in between db consultations
                     // check if start and end of db consultation is in between user consultations
 
-                    if (u_start.inBetween(c_start, c_end) || u_end.isBetween(c_start, c_end)) {
+                    if ((u_start.inBetween(c_start, c_end) || u_end.isBetween(c_start, c_end)) || (c_start.isSame(u_start) || c_end.isSame(u_end))) {
                         result.push(false);
                     } else {
                         if (c_start.inBetween(u_start, u_end) || c_end.isBetween(u_start, u_end)) {
@@ -547,6 +547,47 @@ app.post("/verify-consultation-hours", (req, res) => {
 
                             Section.findOne({ sectionName: section, subject: subject }, (err, classFound) => {
                                 if (classFound) {
+                                    let sem_start = moment().dayOfYear(classFound.semester.start).set({ 'year': classFound.semester.startYear });
+                                    let sem_end = moment().dayOfYear(classFound.semester.end).set({ 'year': classFound.semester.endYear });
+                                    if (u_start - sem_start > 0) {
+                                        let toSend = Object.assign({}, {
+                                            replies: [{
+                                                type: 'text',
+                                                content: 'I commend you for your eagerness, but you can\'t schedule a consultation before the semester officially starts. Please try scheduling at a later date.'
+                                            }],
+                                        }, {
+                                            conversation: {
+                                                memory: {}
+                                            }
+                                        });
+                                        Conversationid.update({
+                                            conversationid: received.conversation.id
+                                        }, {
+                                            $set: {
+                                                conversationid: undefined
+                                            }
+                                        });
+                                        res.send(toSend);
+                                    } else if (u_end - sem_end < 0) {
+                                        let toSend = Object.assign({}, {
+                                            replies: [{
+                                                type: 'text',
+                                                content: 'I\'m really sorry, but you can\'t schedule a consultation after the semester officially ends. Please try scheduling at an earlier date.'
+                                            }],
+                                        }, {
+                                            conversation: {
+                                                memory: {}
+                                            }
+                                        });
+                                        Conversationid.update({
+                                            conversationid: received.conversation.id
+                                        }, {
+                                            $set: {
+                                                conversationid: undefined
+                                            }
+                                        });
+                                        res.send(toSend);
+                                    }
                                     Conversationid.findOne({
                                         conversationid: received.conversation.id
                                     }, function (err, obj) {
