@@ -323,8 +323,10 @@ app.post("/confirm-consultation", (req, res) => {
 app.post("/check-available", (req, res) => {
     let received = req.body;
 
+    console.log(received);
+
     let gender = received.conversation.memory.gender.value;
-    let family_name = _.lowerCase(received.conversation.memory.family_name.fullName);
+    let family_name = _.lowerCase(received.conversation.memory.family_name.raw);
     family_name = _.capitalize(family_name);
 
     let results = [];
