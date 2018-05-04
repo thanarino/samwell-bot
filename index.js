@@ -320,6 +320,106 @@ app.post("/confirm-consultation", (req, res) => {
     }
 });
 
+app.post("/check-available", (req, res) => {
+    let received = req.body;
+
+    let gender = received.conversation.memory.gender.value;
+    let family_name = _.lowerCase(received.conversation.memory.family_name.fullName);
+    family_name = _.capitalize(family_name);
+
+    let results = [];
+
+    Conversationid.findOne({ conversationid: received.conversation.id }, (err, obj) => {
+        if (obj) {
+            // find all teachers same surname with input
+            Teachers.find({ family_name: family_name }, (err2, docs) => {
+                if (docs.length > 0) {
+                    //find all sections that contain the teacher and the student
+                    let studentID = obj.fbid;
+                    docs.map((teacher) => {
+                        Sections.find({ studentList: studentID, teacherList: teacher._id, isDeleted: false }, (err, docs) => {
+                            if (docs.length > 0) {
+                                results = _.union(results, teacher);
+                            }
+                        });
+                    });
+                } else {
+                    // no found teachers with the same surname as input.
+                    let toSend = Object.assign({}, {
+                        replies: [
+                            {
+                                type: 'text',
+                                content: 'I can\'t seem to find a professor with that surname. Please check your spelling and try again.'
+                            }
+                        ],
+                    }, {
+                            conversation: {
+                                memory: {}
+                            }
+                        });
+                    Conversationid.update({ conversationid: received.conversation.id }, { $set: { conversationid: undefined } });
+                    res.send(toSend);
+                }
+            });
+        }
+    });
+    if (results.length === 0) {
+        //the student is not a student of the professor
+        let toSend = Object.assign({}, {
+            replies: [
+                {
+                    type: 'text',
+                    content: 'I\'m sorry but you have to be a student of the professor first before you can check on his or her availability.' 
+                }
+            ],
+        }, {
+                conversation: {
+                    memory: {}
+                }
+            });
+        Conversationid.update({ conversationid: received.conversation.id }, { $set: { conversationid: undefined } });
+        res.send(toSend);
+    } else if(results.length > 1){
+        //the student has 2 or more teachers with the same surname
+        let string = `It seems that you have ${results.length} professors with the same last name! However, because I am kind and caring, here are all their statuses: `;
+        results.map((teacher) => {
+            string += `${teacher.gender === "male" ? `Sir` : `Ma'am`} ${teacher.given_name} ${teacher.family_name} is ${teacher.available ? 'available for consultation right now.' : ' not available for consultation right now.'}`
+        });
+
+        let toSend = Object.assign({}, {
+            replies: [
+                {
+                    type: 'text',
+                    content: string
+                }
+            ],
+        }, {
+                conversation: {
+                    memory: {}
+                }
+            });
+        Conversationid.update({ conversationid: received.conversation.id }, { $set: { conversationid: undefined } });
+        res.send(toSend);
+    } else {
+        // the student has exactly 1 teacher with the same name as input
+        let teacher = results[0];
+        let toSend = Object.assign({}, {
+            replies: [
+                {
+                    type: 'text',
+                    content: `${teacher.gender === "male" ? `Sir` : `Ma'am`} ${teacher.given_name} ${teacher.family_name} is ${teacher.available ? 'available for consultation right now.' : ' not available for consultation right now.'}`
+                }
+            ],
+        }, {
+                conversation: {
+                    memory: {}
+                }
+            });
+        Conversationid.update({ conversationid: received.conversation.id }, { $set: { conversationid: undefined } });
+        res.send(toSend);
+    }
+})
+
 app.post("/verify-class-enlisted", (req, res) => {
     let received = req.body;
 
@@ -335,6 +435,7 @@ app.post("/verify-class-enlisted", (req, res) => {
                 sectionName: section,
                 subject: subject,
                 studentList: obj.fbid,
+                isDeleted: false
             }, function (err2, obj2) {
                 if (obj2) {
                     console.log(obj2);
