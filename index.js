@@ -323,7 +323,7 @@ app.post("/confirm-consultation", (req, res) => {
 app.post("/check-available", (req, res) => {
     let received = req.body;
 
-    console.log(received);
+    console.log(received.conversation.memory);
 
     let gender = received.conversation.memory.gender.value;
     let family_name = _.lowerCase(received.conversation.memory.person.fullname);
@@ -334,10 +334,12 @@ app.post("/check-available", (req, res) => {
     Conversationid.findOne({ conversationid: received.conversation.id }, (err, obj) => {
         if (obj) {
             // find all teachers same surname with input
+            console.log(family_name);
             Teachers.find({ family_name: family_name }, (err2, docs) => {
                 if (docs.length > 0) {
                     //find all sections that contain the teacher and the student
                     let studentID = obj.fbid;
+                    console.log(docs);
                     docs.map((teacher) => {
                         Sections.find({ studentList: studentID, teacherList: teacher._id, isDeleted: false }, (err, docs) => {
                             if (docs.length > 0) {
