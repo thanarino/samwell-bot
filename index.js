@@ -340,9 +340,10 @@ app.post("/check-available", (req, res) => {
                     //find all sections that contain the teacher and the student
                     let studentID = obj.fbid;
                     console.log(docs);
+                    console.log(studentID);
                     docs.map((teacher) => {
-                        Section.find({ studentList: studentID, teacherList: teacher._id, isDeleted: false }, (err, docs) => {
-                            if (docs.length > 0) {
+                        Section.find({ studentList: studentID, teacherList: teacher._id, isDeleted: false }, (err2, docs2) => {
+                            if (docs2.length > 0) {
                                 results = _.union(results, teacher);
                             }
                         });
