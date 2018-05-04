@@ -326,7 +326,7 @@ app.post("/check-available", (req, res) => {
     console.log(received);
 
     let gender = received.conversation.memory.gender.value;
-    let family_name = _.lowerCase(received.conversation.memory.family_name.raw);
+    let family_name = _.lowerCase(received.conversation.memory.person.fullname);
     family_name = _.capitalize(family_name);
 
     let results = [];
