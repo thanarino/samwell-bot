@@ -398,14 +398,18 @@ app.post("/check-available", (req, res) => {
                 if (docs.length > 0) {
                     //find all sections that contain the teacher and the student
                     let studentID = obj.fbid;
-                    console.log(docs);
-                    console.log(studentID);
-                    Section.find({ studentList: studentID, teacherList: { $in: docs }, isDeleted: false }, (err2, docs2) => {
+                    let ids = docs.map((id) => {
+                        return id._id;
+                    });
+                    console.log("ids: :", ids);
+                    console.log("docs: ", docs);
+                    console.log("studentid: ", studentID);
+                    Section.find({ studentList: studentID, teacherList: { $in: ids }, isDeleted: false }, (err2, docs2) => {
                         if (docs2.length > 0) {
-
+                            console.log(docs2);
                             docs2.map((section) => {
                                 section.teacherList.map((teacherID) => {
-                                    if (_.includes(docs, teacherID)) {
+                                    if (_.includes(ids, teacherID)) {
                                         results = _.union(results, [teacherID]);
                                     }
                                 })
