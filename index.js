@@ -608,15 +608,15 @@ app.post("/see-available", (req, res) => {
                                         //the student has 2 or more teachers with the same surname
                                         let string = `It seems that you have ${docs.length} professors with the same last name! However, because I am kind and caring, here are all their statuses: `;
                                         docs.map((teacher) => {
-                                            string += `${teacher.gender === "male" ? `Sir` : `Ma'am`} ${teacher.given_name} ${teacher.family_name} is available from ${teacher.consultationHours[date].time.map((time, index) => {
-                                                if (teacher.consultationHours[date].time.length === 1) {
+                                            string += `${teacher.gender === "male" ? `Sir` : `Ma'am`} ${teacher.given_name} ${teacher.family_name} is available from ${teacher.consultationHours[day].time.map((time, index) => {
+                                                if (teacher.consultationHours[day].time.length === 1) {
                                                     return `${moment(time.start, 'hh:mm').format('hh:mm a')} to ${moment(time.start, 'hh:mm').format('hh:mm a')} `
-                                                } else if (index === teacher.consultationHours[date].time.length-1) {
+                                                } else if (index === teacher.consultationHours[day].time.length-1) {
                                                     return `and ${moment(time.start, 'hh:mm').format('hh:mm a')} to ${moment(time.start, 'hh:mm').format('hh:mm a')}`
                                                 } else {
                                                     return `${moment(time.start, 'hh:mm').format('hh:mm a')} to ${moment(time.start, 'hh:mm').format('hh:mm a')}, `
                                                 }
-                                            })} on ${teacher.consultationHours[date].fullName}s.`
+                                            })} on ${teacher.consultationHours[day].fullName}s.`
                                         });
 
                                         let toSend = Object.assign({}, {
@@ -644,15 +644,15 @@ app.post("/see-available", (req, res) => {
                                         let toSend = Object.assign({}, {
                                             replies: [{
                                                 type: 'text',
-                                                content: `${teacher.consultationHours[date].time.length > 0 ? `${teacher.gender === "male" ? `Sir` : `Ma'am`} ${teacher.given_name} ${teacher.family_name} is ${teacher.consultationHours[date].time.map((time, index) => {
-                                                    if (teacher.consultationHours[date].time.length === 1) {
+                                                content: `${teacher.consultationHours[day].time.length > 0 ? `${teacher.gender === "male" ? `Sir` : `Ma'am`} ${teacher.given_name} ${teacher.family_name} is ${teacher.consultationHours[day].time.map((time, index) => {
+                                                    if (teacher.consultationHours[day].time.length === 1) {
                                                         return `${moment(time.start, 'hh:mm').format('hh:mm a')} to ${moment(time.start, 'hh:mm').format('hh:mm a')} `
-                                                    } else if (index === teacher.consultationHours[date].time.length - 1) {
+                                                    } else if (index === teacher.consultationHours[day].time.length - 1) {
                                                         return `and ${moment(time.start, 'hh:mm').format('hh:mm a')} to ${moment(time.start, 'hh:mm').format('hh:mm a')}`
                                                     } else {
                                                         return `${moment(time.start, 'hh:mm').format('hh:mm a')} to ${moment(time.start, 'hh:mm').format('hh:mm a')}, `
                                                     }
-                                                })} on ${teacher.consultationHours[date].fullName}s.` : `I don't think ${teacher.gender === "male" ? `Sir` : `Ma'am`} ${teacher.given_name} ${teacher.family_name} has consultation hours on that day. Try another day.`}`
+                                                })} on ${teacher.consultationHours[day].fullName}s.` : `I don't think ${teacher.gender === "male" ? `Sir` : `Ma'am`} ${teacher.given_name} ${teacher.family_name} has consultation hours on that day. Try another day.`}`
                                             }],
                                         }, {
                                                 conversation: {
