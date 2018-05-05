@@ -350,6 +350,7 @@ app.post("/check-available", (req, res) => {
                         });
                         console.log('results',results);
                     });
+                    console.log("after fxn results: ", results);
                     if (results.length === 0) {
                         //the student is not a student of the professor
                         let toSend = Object.assign({}, {
