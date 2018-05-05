@@ -640,10 +640,11 @@ app.post("/see-available", (req, res) => {
                                     } else {
                                         // the student has exactly 1 teacher with the same name as input
                                         let teacher = docs[0];
+                                        console.log(teacher);
                                         let toSend = Object.assign({}, {
                                             replies: [{
                                                 type: 'text',
-                                                content: `${teacher.gender === "male" ? `Sir` : `Ma'am`} ${teacher.given_name} ${teacher.family_name} is ${teacher.consultationHours[date].time.map((time, index) => {
+                                                content: `${teacher.consultationHours[date].time.length > 0 ? `${teacher.gender === "male" ? `Sir` : `Ma'am`} ${teacher.given_name} ${teacher.family_name} is ${teacher.consultationHours[date].time.map((time, index) => {
                                                     if (teacher.consultationHours[date].time.length === 1) {
                                                         return `${moment(time.start, 'hh:mm').format('hh:mm a')} to ${moment(time.start, 'hh:mm').format('hh:mm a')} `
                                                     } else if (index === teacher.consultationHours[date].time.length - 1) {
@@ -651,7 +652,7 @@ app.post("/see-available", (req, res) => {
                                                     } else {
                                                         return `${moment(time.start, 'hh:mm').format('hh:mm a')} to ${moment(time.start, 'hh:mm').format('hh:mm a')}, `
                                                     }
-                                                })} on ${teacher.consultationHours[date].fullName}s.`
+                                                })} on ${teacher.consultationHours[date].fullName}s.` : `I don't think ${teacher.gender === "male" ? `Sir` : `Ma'am`} ${teacher.given_name} ${teacher.family_name} has consultation hours on that day. Try another day.`}`
                                             }],
                                         }, {
                                                 conversation: {
