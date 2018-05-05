@@ -10,6 +10,7 @@ let consultationSchema = new Schema({
     startTime: { type: String },
     endTime: { type: String },
     date: { type: Number },
+    startDate: { type: Date },
     year: { type: Number },
     isDone: { type: Boolean },
     isDeleted: { type: Boolean },

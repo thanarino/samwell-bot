@@ -822,6 +822,40 @@ app.post("/verify-class-enlisted", (req, res) => {
     })
 });
 
+app.post('/next-consultation', (req, res) => {
+    let received = req.body;
+
+    Conversationid.findOne({ conversationid: received.conversation.id }, (err, obj) => {
+        if (obj) {
+            let studentid = obj.fbid;
+            Consultations.find({ _id: studentid }, (err2, docs) => {
+                if (docs.length > 0) {
+                    
+                } else {
+                    let toSend = Object.assign({}, {
+                        replies: [{
+                            type: 'text',
+                            content: 'Hmm, I don\'t think you have a consultation scheduled yet.'
+                        }],
+                    }, {
+                            conversation: {
+                                memory: {}
+                            }
+                        });
+                    Conversationid.update({
+                        conversationid: received.conversation.id
+                    }, {
+                            $set: {
+                                conversationid: undefined
+                            }
+                        });
+                    res.send(toSend);
+                }
+            })
+        }
+    })
+});
+
 checkConsultationHoursConflict = (time, u_start, u_end, t_id) => {
     //format consultation hours of professor
     let db_start = moment(time.start, 'hh:mm').set({
@@ -1052,6 +1086,7 @@ app.post("/verify-consultation-hours", (req, res) => {
                                                     startTime: u_start.format('HH:mm'),
                                                     endTime: u_end.format('HH:mm'),
                                                     date: u_start.dayOfYear(),
+                                                    startDate: u_start.toDate(),
                                                     year: u_start.get('year'),
                                                     isDone: false,
                                                     isDeleted: false,
