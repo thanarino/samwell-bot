@@ -429,7 +429,7 @@ returnResults = (res, received, results) => {
             let toSend = Object.assign({}, {
                 replies: [{
                     type: 'text',
-                    content: `${teacher.gender === "male" ? `Sir` : `Ma'am`} ${teacher.given_name} ${teacher.family_name} is ${teacher.available ? 'available for consultation right now.' : ' not available for consultation right now.'}`
+                    content: `${teacher.available ? `Yes! ` : `No :( `} ${teacher.gender === "male" ? `Sir` : `Ma'am`} ${teacher.given_name} ${teacher.family_name} is ${teacher.available ? 'available for consultation right now. Go for it!!' : ' not available for consultation right now. Maybe you should schedule a consultation instead?'}`
                 }],
             }, {
                 conversation: {
@@ -496,7 +496,6 @@ app.post("/check-available", (req, res) => {
                                     }
                                 })
                             })
-
                             returnResults(res, received, results);
                         }
                     });
@@ -522,6 +521,177 @@ app.post("/check-available", (req, res) => {
                     res.send(toSend);
                 }
             });
+        }
+    });
+});
+
+app.post("/see-available", (req, res) => {
+    let received = req.body;
+
+    console.log(received.conversation.memory);
+
+    let gender = received.conversation.memory.gender.value;
+    let date = received.conversation.memory.datetime.iso;
+    let family_name = _.lowerCase(received.conversation.memory.person.raw);
+    family_name = _.capitalize(family_name);
+
+    let results = [];
+
+    Conversationid.findOne({
+        conversationid: received.conversation.id
+    }, (err, obj) => {
+        if (obj) {
+            // find all teachers same surname with input
+            console.log(family_name);
+            Teachers.find({
+                family_name: family_name,
+                roles: 'teacher'
+            }, {
+                    _id: 1
+                }, (err2, docs) => {
+                    if (docs.length > 0) {
+                        //find all sections that contain the teacher and the student
+                        let studentID = obj.fbid;
+                        let ids = docs.map((id) => {
+                            return id._id;
+                        });
+                        console.log("ids: :", ids);
+                        console.log("docs: ", docs);
+                        console.log("studentid: ", studentID);
+                        Section.find({
+                            studentList: studentID,
+                            teacherList: {
+                                $in: ids
+                            },
+                            isDeleted: false
+                        }, (err2, docs2) => {
+                            if (docs2.length > 0) {
+                                console.log(docs2);
+                                docs2.map((section) => {
+                                    section.teacherList.map((teacherID) => {
+                                        if (_.includes(ids, teacherID)) {
+                                            results = _.union(results, [teacherID]);
+                                        }
+                                    })
+                                })
+
+                                Teachers.find({
+                                    _id: {
+                                        $in: results
+                                    },
+                                    isDeleted: false,
+                                    roles: "teacher"
+                                }, (err, docs) => {
+                                    let day = moment(datetime).get('day');
+
+                                    if (docs.length === 0) {
+                                        //the student is not a student of the professor
+                                        let toSend = Object.assign({}, {
+                                            replies: [{
+                                                type: 'text',
+                                                content: 'I\'m sorry but you have to be a student of the professor first before you can see his or her schedule on a specific day.'
+                                            }],
+                                        }, {
+                                                conversation: {
+                                                    memory: {}
+                                                }
+                                            });
+                                        Conversationid.update({
+                                            conversationid: received.conversation.id
+                                        }, {
+                                                $set: {
+                                                    conversationid: undefined
+                                                }
+                                            });
+                                        res.send(toSend);
+                                    } else if (docs.length > 1) {
+                                        //the student has 2 or more teachers with the same surname
+                                        let string = `It seems that you have ${docs.length} professors with the same last name! However, because I am kind and caring, here are all their statuses: `;
+                                        docs.map((teacher) => {
+                                            string += `${teacher.gender === "male" ? `Sir` : `Ma'am`} ${teacher.given_name} ${teacher.family_name} is available from ${teacher.consultationHours[datetime].time.map((time, index) => {
+                                                if (teacher.consultationHours[datetime].time.length === 1) {
+                                                    return `${moment(time.start, 'hh:mm').format('hh:mm a')} to ${moment(time.start, 'hh:mm').format('hh:mm a')} `
+                                                } else if (index === teacher.consultationHours[datetime].time.length-1) {
+                                                    return `and ${moment(time.start, 'hh:mm').format('hh:mm a')} to ${moment(time.start, 'hh:mm').format('hh:mm a')}`
+                                                } else {
+                                                    return `${moment(time.start, 'hh:mm').format('hh:mm a')} to ${moment(time.start, 'hh:mm').format('hh:mm a')}, `
+                                                }
+                                            })} on ${teacher.consultationHours[datetime].fullName}s.`
+                                        });
+
+                                        let toSend = Object.assign({}, {
+                                            replies: [{
+                                                type: 'text',
+                                                content: string
+                                            }],
+                                        }, {
+                                                conversation: {
+                                                    memory: {}
+                                                }
+                                            });
+                                        Conversationid.update({
+                                            conversationid: received.conversation.id
+                                        }, {
+                                                $set: {
+                                                    conversationid: undefined
+                                                }
+                                            });
+                                        res.send(toSend);
+                                    } else {
+                                        // the student has exactly 1 teacher with the same name as input
+                                        let teacher = docs[0];
+                                        let toSend = Object.assign({}, {
+                                            replies: [{
+                                                type: 'text',
+                                                content: `${teacher.gender === "male" ? `Sir` : `Ma'am`} ${teacher.given_name} ${teacher.family_name} is ${teacher.consultationHours[datetime].time.map((time, index) => {
+                                                    if (teacher.consultationHours[datetime].time.length === 1) {
+                                                        return `${moment(time.start, 'hh:mm').format('hh:mm a')} to ${moment(time.start, 'hh:mm').format('hh:mm a')} `
+                                                    } else if (index === teacher.consultationHours[datetime].time.length - 1) {
+                                                        return `and ${moment(time.start, 'hh:mm').format('hh:mm a')} to ${moment(time.start, 'hh:mm').format('hh:mm a')}`
+                                                    } else {
+                                                        return `${moment(time.start, 'hh:mm').format('hh:mm a')} to ${moment(time.start, 'hh:mm').format('hh:mm a')}, `
+                                                    }
+                                                })} on ${teacher.consultationHours[datetime].fullName}s.`
+                                            }],
+                                        }, {
+                                                conversation: {
+                                                    memory: {}
+                                                }
+                                            });
+                                        Conversationid.update({
+                                            conversationid: received.conversation.id
+                                        }, {
+                                                $set: {
+                                                    conversationid: undefined
+                                                }
+                                            });
+                                        res.send(toSend);
+                                    }
+                                })
+                            }
+                        });
+                    } else {
+                        // no found teachers with the same surname as input.
+                        let toSend = Object.assign({}, {
+                            replies: [{
+                                type: 'text',
+                                content: 'I can\'t seem to find a professor with that surname. Please check your spelling and try again.'
+                            }],
+                        }, {
+                                conversation: {
+                                    memory: {}
+                                }
+                            });
+                        Conversationid.update({
+                            conversationid: received.conversation.id
+                        }, {
+                                $set: {
+                                    conversationid: undefined
+                                }
+                            });
+                        res.send(toSend);
+                    }
+                });
         }
     });
 })
