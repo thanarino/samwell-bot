@@ -608,6 +608,7 @@ app.post("/see-available", (req, res) => {
                                         //the student has 2 or more teachers with the same surname
                                         let string = `It seems that you have ${docs.length} professors with the same last name! However, because I am kind and caring, here are all their statuses: `;
                                         docs.map((teacher) => {
+                                            console.log(teacher.consultationHours[day]);
                                             string += `${teacher.gender === "male" ? `Sir` : `Ma'am`} ${teacher.given_name} ${teacher.family_name} is available from ${teacher.consultationHours[day].time.map((time, index) => {
                                                 if (teacher.consultationHours[day].time.length === 1) {
                                                     return `${moment(time.start, 'hh:mm').format('hh:mm a')} to ${moment(time.end, 'hh:mm').format('hh:mm a')} `
