@@ -649,10 +649,12 @@ app.post("/see-available", (req, res) => {
                                                 content: `${teacher.consultationHours[day].time.length > 0 ? `${teacher.gender === "male" ? `Sir` : `Ma'am`} ${teacher.given_name} ${teacher.family_name} is available ${teacher.consultationHours[day].time.map((time, index) => {
                                                     if (teacher.consultationHours[day].time.length === 1) {
                                                         return `${moment(time.start, 'hh:mm').format('hh:mm a')} to ${moment(time.end, 'hh:mm').format('hh:mm a')} `
+                                                    } else if(index === 0) {
+                                                        return `${moment(time.start, 'hh:mm').format('hh:mm a')} to ${moment(time.end, 'hh:mm').format('hh:mm a')}`
                                                     } else if (index === teacher.consultationHours[day].time.length - 1) {
-                                                        return `and ${moment(time.start, 'hh:mm').format('hh:mm a')} to ${moment(time.end, 'hh:mm').format('hh:mm a')} `
+                                                        return `, and ${moment(time.start, 'hh:mm').format('hh:mm a')} to ${moment(time.end, 'hh:mm').format('hh:mm a')} `
                                                     } else {
-                                                        return `${moment(time.start, 'hh:mm').format('hh:mm a')} to ${moment(time.end, 'hh:mm').format('hh:mm a')} `
+                                                        return `, ${moment(time.start, 'hh:mm').format('hh:mm a')} to ${moment(time.end, 'hh:mm').format('hh:mm a')}`
                                                     }
                                                 })}on ${teacher.consultationHours[day].fullName}s.` : `I don't think ${teacher.gender === "male" ? `Sir` : `Ma'am`} ${teacher.given_name} ${teacher.family_name} has consultation hours on that day. Try another day.`}`
                                             }],
