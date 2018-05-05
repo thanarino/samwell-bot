@@ -320,6 +320,65 @@ app.post("/confirm-consultation", (req, res) => {
     }
 });
 
+returnResults = (res, received, results) => {
+    console.log("after fxn results: ", results);
+    if (results.length === 0) {
+        //the student is not a student of the professor
+        let toSend = Object.assign({}, {
+            replies: [
+                {
+                    type: 'text',
+                    content: 'I\'m sorry but you have to be a student of the professor first before you can check on his or her availability.'
+                }
+            ],
+        }, {
+                conversation: {
+                    memory: {}
+                }
+            });
+        Conversationid.update({ conversationid: received.conversation.id }, { $set: { conversationid: undefined } });
+        res.send(toSend);
+    } else if (results.length > 1) {
+        //the student has 2 or more teachers with the same surname
+        let string = `It seems that you have ${results.length} professors with the same last name! However, because I am kind and caring, here are all their statuses: `;
+        results.map((teacher) => {
+            string += `${teacher.gender === "male" ? `Sir` : `Ma'am`} ${teacher.given_name} ${teacher.family_name} is ${teacher.available ? 'available for consultation right now.' : ' not available for consultation right now.'}`
+        });
+
+        let toSend = Object.assign({}, {
+            replies: [
+                {
+                    type: 'text',
+                    content: string
+                }
+            ],
+        }, {
+                conversation: {
+                    memory: {}
+                }
+            });
+        Conversationid.update({ conversationid: received.conversation.id }, { $set: { conversationid: undefined } });
+        res.send(toSend);
+    } else {
+        // the student has exactly 1 teacher with the same name as input
+        let teacher = results[0];
+        let toSend = Object.assign({}, {
+            replies: [
+                {
+                    type: 'text',
+                    content: `${teacher.gender === "male" ? `Sir` : `Ma'am`} ${teacher.given_name} ${teacher.family_name} is ${teacher.available ? 'available for consultation right now.' : ' not available for consultation right now.'}`
+                }
+            ],
+        }, {
+                conversation: {
+                    memory: {}
+                }
+            });
+        Conversationid.update({ conversationid: received.conversation.id }, { $set: { conversationid: undefined } });
+        res.send(toSend);
+    }
+}
+
 app.post("/check-available", (req, res) => {
     let received = req.body;
 
@@ -343,71 +402,16 @@ app.post("/check-available", (req, res) => {
                     console.log(studentID);
                     (async () => {
                         await docs.map((teacher) => {
-                                Section.find({ studentList: studentID, teacherList: teacher._id, isDeleted: false }, (err2, docs2) => {
-                                    if (docs2.length > 0) {
-                                        results.push(teacher);
-                                        console.log("inloop results: ", results);
-                                    }
-                                });
-                                console.log('results', results);
-                        });
-                        console.log("after fxn results: ", results);
-                        if (results.length === 0) {
-                            //the student is not a student of the professor
-                            let toSend = Object.assign({}, {
-                                replies: [
-                                    {
-                                        type: 'text',
-                                        content: 'I\'m sorry but you have to be a student of the professor first before you can check on his or her availability.'
-                                    }
-                                ],
-                            }, {
-                                    conversation: {
-                                        memory: {}
-                                    }
-                                });
-                            Conversationid.update({ conversationid: received.conversation.id }, { $set: { conversationid: undefined } });
-                            res.send(toSend);
-                        } else if (results.length > 1) {
-                            //the student has 2 or more teachers with the same surname
-                            let string = `It seems that you have ${results.length} professors with the same last name! However, because I am kind and caring, here are all their statuses: `;
-                            results.map((teacher) => {
-                                string += `${teacher.gender === "male" ? `Sir` : `Ma'am`} ${teacher.given_name} ${teacher.family_name} is ${teacher.available ? 'available for consultation right now.' : ' not available for consultation right now.'}`
+                            Section.find({ studentList: studentID, teacherList: teacher._id, isDeleted: false }, (err2, docs2) => {
+                                if (docs2.length > 0) {
+                                    results.push(teacher);
+                                    console.log("inloop results: ", results);
+                                }
                             });
-
-                            let toSend = Object.assign({}, {
-                                replies: [
-                                    {
-                                        type: 'text',
-                                        content: string
-                                    }
-                                ],
-                            }, {
-                                    conversation: {
-                                        memory: {}
-                                    }
-                                });
-                            Conversationid.update({ conversationid: received.conversation.id }, { $set: { conversationid: undefined } });
-                            res.send(toSend);
-                        } else {
-                            // the student has exactly 1 teacher with the same name as input
-                            let teacher = results[0];
-                            let toSend = Object.assign({}, {
-                                replies: [
-                                    {
-                                        type: 'text',
-                                        content: `${teacher.gender === "male" ? `Sir` : `Ma'am`} ${teacher.given_name} ${teacher.family_name} is ${teacher.available ? 'available for consultation right now.' : ' not available for consultation right now.'}`
-                                    }
-                                ],
-                            }, {
-                                    conversation: {
-                                        memory: {}
-                                    }
-                                });
-                            Conversationid.update({ conversationid: received.conversation.id }, { $set: { conversationid: undefined } });
-                            res.send(toSend);
-                        }
-                    })()
+                            console.log('results', results);
+                        });
+                        await returnResults(res, received, results);
+                    })();
                 } else {
                     // no found teachers with the same surname as input.
                     let toSend = Object.assign({}, {
