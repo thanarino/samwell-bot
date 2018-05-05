@@ -341,15 +341,17 @@ app.post("/check-available", (req, res) => {
                     let studentID = obj.fbid;
                     console.log(docs);
                     console.log(studentID);
-                    docs.map(async (teacher) => {
-                        await Section.find({ studentList: studentID, teacherList: teacher._id, isDeleted: false }, (err2, docs2) => {
-                            if (docs2.length > 0) {
-                                results.push(teacher);
-                                console.log("inloop results: ", results);
-                            }
-                        });
-                        console.log('results',results);
-                    });
+                    async () => {
+                        await docs.map((teacher) => {
+                                Section.find({ studentList: studentID, teacherList: teacher._id, isDeleted: false }, (err2, docs2) => {
+                                    if (docs2.length > 0) {
+                                        results.push(teacher);
+                                        console.log("inloop results: ", results);
+                                    }
+                                });
+                                console.log('results', results);
+                            });
+                    }    
                     console.log("after fxn results: ", results);
                     if (results.length === 0) {
                         //the student is not a student of the professor
