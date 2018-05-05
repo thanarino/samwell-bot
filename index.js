@@ -345,7 +345,7 @@ app.post("/check-available", (req, res) => {
                         Section.find({ studentList: studentID, teacherList: teacher._id, isDeleted: false }, (err2, docs2) => {
                             if (docs2.length > 0) {
                                 results.push(teacher);
-                                console.log(results);
+                                console.log("inloop results: ", results);
                             }
                         });
                         console.log('results',results);
