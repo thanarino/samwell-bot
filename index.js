@@ -612,7 +612,7 @@ app.post("/see-available", (req, res) => {
                                                 if (teacher.consultationHours[day].time.length === 1) {
                                                     return `${moment(time.start, 'hh:mm').format('hh:mm a')} to ${moment(time.end, 'hh:mm').format('hh:mm a')} `
                                                 } else if (index === teacher.consultationHours[day].time.length-1) {
-                                                    return `and ${moment(time.start, 'hh:mm').format('hh:mm a')} to ${moment(time.end, 'hh:mm').format('hh:mm a')}`
+                                                    return `and ${moment(time.start, 'hh:mm').format('hh:mm a')} to ${moment(time.end, 'hh:mm').format('hh:mm a')} `
                                                 } else {
                                                     return `${moment(time.start, 'hh:mm').format('hh:mm a')} to ${moment(time.end, 'hh:mm').format('hh:mm a')}, `
                                                 }
@@ -648,7 +648,7 @@ app.post("/see-available", (req, res) => {
                                                     if (teacher.consultationHours[day].time.length === 1) {
                                                         return `${moment(time.start, 'hh:mm').format('hh:mm a')} to ${moment(time.end, 'hh:mm').format('hh:mm a')} `
                                                     } else if (index === teacher.consultationHours[day].time.length - 1) {
-                                                        return `and ${moment(time.start, 'hh:mm').format('hh:mm a')} to ${moment(time.end, 'hh:mm').format('hh:mm a')}`
+                                                        return `and ${moment(time.start, 'hh:mm').format('hh:mm a')} to ${moment(time.end, 'hh:mm').format('hh:mm a')} `
                                                     } else {
                                                         return `${moment(time.start, 'hh:mm').format('hh:mm a')} to ${moment(time.end, 'hh:mm').format('hh:mm a')}, `
                                                     }
