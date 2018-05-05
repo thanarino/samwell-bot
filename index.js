@@ -828,8 +828,37 @@ app.post('/next-consultation', (req, res) => {
     Conversationid.findOne({ conversationid: received.conversation.id }, (err, obj) => {
         if (obj) {
             let studentid = obj.fbid;
-            Consultations.find({ _id: studentid }, (err2, docs) => {
-                if (docs.length > 0) {
+            Consultations.findOne({ _id: studentid }, { sort: { startDate: -1 } }, (err2, consultation) => {
+                if (consultation) {
+                    Teachers.findOne({ _id: consultation.teacherID }, (err3, teacher) => {
+                        if (teacher) {
+                            Section.findOne({ _id: consultation.sectionID }, (err4, section) => {
+                                if (section) {
+                                    let toSend = Object.assign({}, {
+                                        replies: [{
+                                            type: 'text',
+                                            content: 'Okay here is your next consultation: '
+                                        }, {
+                                            type: 'text',
+                                                content: `${section.subject} - ${section.sectionName} with ${teacher.gender === 'male' ? `Sir` : `Ma'am`} ${teacher.given_name} ${teacher.family_name} ${moment(consultation.start_time).format('MMMM Do, YYYY') === moment(consultation.end_time).format('MMMM Do, YYYY') ? `on ${moment(consultation.end_time).format('dddd, MMMM Do')} from ${moment(consultation.start_time).format('h:mm a')} to ${moment(consultation.end_time).format('h:mm a')}` : `from ${moment(consultation.start_time).format('dddd, MMMM Do, h:mm a')} to ${moment(consultation.end_time).format('dddd, MMMM Do, h:mm a')}`}`
+                                        }],
+                                    }, {
+                                            conversation: {
+                                                memory: {}
+                                            }
+                                        });
+                                    Conversationid.update({
+                                        conversationid: received.conversation.id
+                                    }, {
+                                            $set: {
+                                                conversationid: undefined
+                                            }
+                                        });
+                                    res.send(toSend);
+                                }
+                            })
+                        }
+                    })
                     
                 } else {
                     let toSend = Object.assign({}, {
@@ -1381,7 +1410,7 @@ analyzeEntities = (sender, res, input) => {
                         }
                     });
                 }
-            } else if (res.intents[0].slug === "confirmentry" || res.intents[0].slug === "getcode" || res.intents[0].slug === "verifycode" || res.intents[0].slug === 'checkavailable' || res.intents[0].slug === 'seeavailable') {
+            } else if (res.intents[0].slug === "confirmentry" || res.intents[0].slug === "getcode" || res.intents[0].slug === "verifycode" || res.intents[0].slug === 'checkavailable' || res.intents[0].slug === 'seeavailable' || res.intents[0].slug === 'nextconsultation') {
                 // conversationId = (typeof conversationId === 'undefined') ? Math.floor((Math.random() * 1000000) + 1) : conversationId;
                 build.dialog({
                         type: 'text',
