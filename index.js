@@ -532,7 +532,7 @@ app.post("/see-available", (req, res) => {
 
     let gender = received.conversation.memory.gender.value;
     let date = received.conversation.memory.datetime.iso;
-    let family_name = _.lowerCase(received.conversation.memory.person.raw);
+    let family_name = _.lowerCase(received.conversation.memory.surname.raw);
     family_name = _.capitalize(family_name);
 
     let results = [];
