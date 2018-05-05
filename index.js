@@ -345,7 +345,9 @@ app.post("/check-available", (req, res) => {
                         Section.find({ studentList: studentID, teacherList: teacher._id, isDeleted: false }, (err2, docs2) => {
                             console.log(docs2);
                             if (docs2.length > 0) {
-                                results = _.union(results, teacher);
+                                let temp = [];
+                                temp = _.union(results, teacher);
+                                results = temp;
                             }
                         });
                     });
