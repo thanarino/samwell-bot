@@ -828,6 +828,7 @@ app.post('/next-consultation', (req, res) => {
     Conversationid.findOne({ conversationid: received.conversation.id }, (err, obj) => {
         if (obj) {
             let studentid = obj.fbid;
+            console.log(studentid);
             Consultations.findOne({ _id: studentid }, { sort: { startDate: -1 } }, (err2, consultation) => {
                 if (consultation) {
                     Teachers.findOne({ _id: consultation.teacherID }, (err3, teacher) => {
