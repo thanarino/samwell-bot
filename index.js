@@ -335,7 +335,7 @@ app.post("/check-available", (req, res) => {
         if (obj) {
             // find all teachers same surname with input
             console.log(family_name);
-            Teachers.find({ family_name: family_name }, (err2, docs) => {
+            Teachers.find({ family_name: family_name, roles: 'teacher' }, (err2, docs) => {
                 if (docs.length > 0) {
                     //find all sections that contain the teacher and the student
                     let studentID = obj.fbid;
@@ -348,7 +348,7 @@ app.post("/check-available", (req, res) => {
                                 console.log(results);
                             }
                         });
-                        console.log(results);
+                        console.log('results',results);
                     });
                     if (results.length === 0) {
                         //the student is not a student of the professor
