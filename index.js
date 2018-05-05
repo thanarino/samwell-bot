@@ -341,8 +341,8 @@ app.post("/check-available", (req, res) => {
                     let studentID = obj.fbid;
                     console.log(docs);
                     console.log(studentID);
-                    docs.map((teacher) => {
-                        Section.find({ studentList: studentID, teacherList: teacher._id, isDeleted: false }, (err2, docs2) => {
+                    docs.map(async (teacher) => {
+                        await Section.find({ studentList: studentID, teacherList: teacher._id, isDeleted: false }, (err2, docs2) => {
                             if (docs2.length > 0) {
                                 results.push(teacher);
                                 console.log("inloop results: ", results);
