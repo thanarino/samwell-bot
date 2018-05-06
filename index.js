@@ -913,7 +913,7 @@ app.post('/next-consultation', (req, res) => {
                                             content: 'Okay here is your next consultation: '
                                         }, {
                                             type: 'text',
-                                            content: `${section.subject} - ${section.sectionName} with ${teacher.gender === 'male' ? `Sir` : `Ma'am`} ${teacher.given_name} ${teacher.family_name} ${`on ${moment(c_date).format('dddd, MMMM Do')} from ${moment(consultation.startTime).format('h:mm a')} to ${moment(consultation.endTime).format('h:mm a')}`}`
+                                            content: `${section.subject} - ${section.sectionName} with ${teacher.gender === 'male' ? `Sir` : `Ma'am`} ${teacher.given_name} ${teacher.family_name} ${`on ${moment(c_date).format('dddd, MMMM Do')} from ${moment(consultation.startTime, 'hh:mm').format('h:mm a')} to ${moment(consultation.endTime, 'hh:mm').format('h:mm a')}`}`
                                         }],
                                     }, {
                                             conversation: {
