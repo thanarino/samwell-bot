@@ -826,40 +826,37 @@ app.post('/all-consultations', (req, res) => {
     let received = req.body;
 
     let toSend = Object.assign({}, {
-        replies: [{
-            type: 'text',
-            content: 'Okay here is your next consultation: '
-        }, {
-            type: 'text',
-            content: `${section.subject} - ${section.sectionName} with ${teacher.gender === 'male' ? `Sir` : `Ma'am`} ${teacher.given_name} ${teacher.family_name} ${moment(consultation.start_time).format('MMMM Do, YYYY') === moment(consultation.end_time).format('MMMM Do, YYYY') ? `on ${moment(consultation.end_time).format('dddd, MMMM Do')} from ${moment(consultation.start_time).format('h:mm a')} to ${moment(consultation.end_time).format('h:mm a')}` : `from ${moment(consultation.start_time).format('dddd, MMMM Do, h:mm a')} to ${moment(consultation.end_time).format('dddd, MMMM Do, h:mm a')}`}`
-        }],
+        replies: [],
     }, {
         conversation: {
             memory: {}
         }
-    });
+        });
 
     Conversationid.findOne({ conversationid: received.conversation.id }, (err, obj) => {
         if (obj) {
             let studentid = obj.fbid;
             console.log(studentid);
-            Consultations.find({ studentID: studentid }, (err2, consultations) => {
+            Consultations.find({ studentID: studentid, isDone: false, isApprovedByStudent: true, isApprovedByTeacher: true }).sort({ 'startDate.$date': -1 }).limit(5).exec((err2, consultations) => {
                 console.log(consultation);
                 if (consultations.length > 0) {
-
                     consultations.map((consultation) => {
+                        let c_date = moment().dayOfYear(consultation.date).set({ 'year': consultation.year });
                         Teachers.findOne({ _id: consultation.teacherID }, (err3, teacher) => {
                             if (teacher) {
                                 Section.findOne({ _id: consultation.sectionID }, (err4, section) => {
                                     if (section) {
-                                        
+                                        toSend.replies.push({
+                                            type: 'text',
+                                            content: `${section.subject} - ${section.sectionName} with ${teacher.gender === 'male' ? `Sir` : `Ma'am`} ${teacher.given_name} ${teacher.family_name} ${`on ${moment(c_date).format('dddd, MMMM Do')} from ${moment(consultation.startTime, 'hh:mm').format('h:mm a')} to ${moment(consultation.endTime, 'hh:mm').format('h:mm a')}`}.`
+                                        })
                                     }
                                 })
                             }
                         });
                     });
                 } else {
-                    let toSend = Object.assign({}, {
+                    let toSenderr = Object.assign({}, {
                         replies: [{
                             type: 'text',
                             content: 'Hmm, I don\'t think you have a consultation scheduled yet.'
@@ -876,10 +873,15 @@ app.post('/all-consultations', (req, res) => {
                                 conversationid: undefined
                             }
                         });
-                    res.send(toSend);
+                    res.send(toSenderr);
                 }
-            })
+            });
         }
+    });
+
+    toSend.replies.unshift({
+        type: 'text',
+        content: `${toSend.replies.length === 5 ? `It seems that you have many pending consultations. Here are your 5 nearest ones: `:`Here are your ${toSend.replies.length} pending consultations: `}`
     });
 
     Conversationid.update({
@@ -899,7 +901,7 @@ app.post('/next-consultation', (req, res) => {
         if (obj) {
             let studentid = obj.fbid;
             console.log(studentid);
-            Consultations.findOne({ studentID: studentid }).sort({ 'startDate.$date': -1 }).exec((err2, consultation) => {
+            Consultations.findOne({ studentID: studentid, isDone: false, isApprovedByStudent: true, isApprovedByTeacher: true }).sort({ 'startDate.$date': -1 }).exec((err2, consultation) => {
                 console.log(consultation);
                 let c_date = moment().dayOfYear(consultation.date).set({ 'year': consultation.year });
                 if (consultation) {
@@ -913,7 +915,7 @@ app.post('/next-consultation', (req, res) => {
                                             content: 'Okay here is your next consultation: '
                                         }, {
                                             type: 'text',
-                                            content: `${section.subject} - ${section.sectionName} with ${teacher.gender === 'male' ? `Sir` : `Ma'am`} ${teacher.given_name} ${teacher.family_name} ${`on ${moment(c_date).format('dddd, MMMM Do')} from ${moment(consultation.startTime, 'hh:mm').format('h:mm a')} to ${moment(consultation.endTime, 'hh:mm').format('h:mm a')}`}`
+                                            content: `${section.subject} - ${section.sectionName} with ${teacher.gender === 'male' ? `Sir` : `Ma'am`} ${teacher.given_name} ${teacher.family_name} ${`on ${moment(c_date).format('dddd, MMMM Do')} from ${moment(consultation.startTime, 'hh:mm').format('h:mm a')} to ${moment(consultation.endTime, 'hh:mm').format('h:mm a')}`}.`
                                         }],
                                     }, {
                                             conversation: {
