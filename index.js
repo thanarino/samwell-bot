@@ -899,7 +899,7 @@ app.post('/next-consultation', (req, res) => {
         if (obj) {
             let studentid = obj.fbid;
             console.log(studentid);
-            Consultations.findOne({ studentID: studentid },{ sort: { 'startDate.$date' : -1 } }, (err2, consultation) => {
+            Consultations.findOne({ studentID: studentid }).sort({ 'startDate.$date': -1 }).exec((err2, consultation) => {
                 console.log(consultation);
                 if (consultation) {
                     Teachers.findOne({ _id: consultation.teacherID }, (err3, teacher) => {
@@ -912,7 +912,7 @@ app.post('/next-consultation', (req, res) => {
                                             content: 'Okay here is your next consultation: '
                                         }, {
                                             type: 'text',
-                                                content: `${section.subject} - ${section.sectionName} with ${teacher.gender === 'male' ? `Sir` : `Ma'am`} ${teacher.given_name} ${teacher.family_name} ${moment(consultation.start_time).format('MMMM Do, YYYY') === moment(consultation.end_time).format('MMMM Do, YYYY') ? `on ${moment(consultation.end_time).format('dddd, MMMM Do')} from ${moment(consultation.start_time).format('h:mm a')} to ${moment(consultation.end_time).format('h:mm a')}` : `from ${moment(consultation.start_time).format('dddd, MMMM Do, h:mm a')} to ${moment(consultation.end_time).format('dddd, MMMM Do, h:mm a')}`}`
+                                            content: `${section.subject} - ${section.sectionName} with ${teacher.gender === 'male' ? `Sir` : `Ma'am`} ${teacher.given_name} ${teacher.family_name} ${moment(consultation.start_time).format('MMMM Do, YYYY') === moment(consultation.end_time).format('MMMM Do, YYYY') ? `on ${moment(consultation.end_time).format('dddd, MMMM Do')} from ${moment(consultation.start_time).format('h:mm a')} to ${moment(consultation.end_time).format('h:mm a')}` : `from ${moment(consultation.start_time).format('dddd, MMMM Do, h:mm a')} to ${moment(consultation.end_time).format('dddd, MMMM Do, h:mm a')}`}`
                                         }],
                                     }, {
                                             conversation: {
@@ -952,7 +952,7 @@ app.post('/next-consultation', (req, res) => {
                         });
                     res.send(toSend);
                 }
-            })
+            });
         }
     })
 });
