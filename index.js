@@ -865,10 +865,10 @@ app.post('/all-consultations', (req, res) => {
                     Promise.all(promises).then(results => {
                         results.map((result) => toSend.replies.push(result));
 
-                        toSend.replies.unshift({
+                        toSend.replies.splice(1, 0, {
                             type: 'text',
                             content: `${toSend.replies.length === 5 ? `It seems that you have many pending consultations. Here are your 5 nearest ones: `:`Here are your ${toSend.replies.length} pending consultations: `}`
-                        });
+                        })
 
                         Conversationid.update({
                             conversationid: received.conversation.id
@@ -921,13 +921,16 @@ app.post('/next-consultation', (req, res) => {
                             Section.findOne({ _id: consultation.sectionID }, (err4, section) => {
                                 if (section) {
                                     let toSend = Object.assign({}, {
-                                        replies: [{
-                                            type: 'text',
-                                            content: 'Okay here is your next consultation: '
-                                        }, {
-                                            type: 'text',
-                                            content: `${section.subject} - ${section.sectionName} with ${teacher.gender === 'male' ? `Sir` : `Ma'am`} ${teacher.given_name} ${teacher.family_name} ${`on ${moment(c_date).format('dddd, MMMM Do')} from ${moment(consultation.startTime, 'hh:mm').format('h:mm a')} to ${moment(consultation.endTime, 'hh:mm').format('h:mm a')}`}.`
-                                        }],
+                                        replies: [
+                                            {
+                                                type: 'text',
+                                                content: `${section.subject} - ${section.sectionName} with ${teacher.gender === 'male' ? `Sir` : `Ma'am`} ${teacher.given_name} ${teacher.family_name} ${`on ${moment(c_date).format('dddd, MMMM Do')} from ${moment(consultation.startTime, 'hh:mm').format('h:mm a')} to ${moment(consultation.endTime, 'hh:mm').format('h:mm a')}`}.`
+                                            },
+                                            {
+                                                type: 'text',
+                                                content: 'Okay here is your next consultation: '
+                                            }
+                                        ],
                                     }, {
                                             conversation: {
                                                 memory: {}
