@@ -838,7 +838,6 @@ app.post('/all-consultations', (req, res) => {
             let studentid = obj.fbid;
             console.log(studentid);
             Consultations.find({ studentID: studentid, isDone: false, isApprovedByStudent: true, isApprovedByTeacher: true }).sort({ 'startDate.$date': -1 }).limit(5).exec((err2, consultations) => {
-                console.log(consultation);
                 if (consultations.length > 0) {
                     consultations.map((consultation) => {
                         let c_date = moment().dayOfYear(consultation.date).set({ 'year': consultation.year });
