@@ -158,7 +158,7 @@ app.post("/verify-class", (req, res) => {
                 ]
             }, {
                 conversation: {
-                    memory: Object.assign({}, received.conversation.memory, {
+                     memory: Object.assign({}, received.conversation.memory, {
                         code: {
                             raw: obj.code,
                             value: obj.code
@@ -822,6 +822,76 @@ app.post("/verify-class-enlisted", (req, res) => {
     })
 });
 
+app.post('/all-consultations', (req, res) => {
+    let received = req.body;
+
+    let toSend = Object.assign({}, {
+        replies: [{
+            type: 'text',
+            content: 'Okay here is your next consultation: '
+        }, {
+            type: 'text',
+            content: `${section.subject} - ${section.sectionName} with ${teacher.gender === 'male' ? `Sir` : `Ma'am`} ${teacher.given_name} ${teacher.family_name} ${moment(consultation.start_time).format('MMMM Do, YYYY') === moment(consultation.end_time).format('MMMM Do, YYYY') ? `on ${moment(consultation.end_time).format('dddd, MMMM Do')} from ${moment(consultation.start_time).format('h:mm a')} to ${moment(consultation.end_time).format('h:mm a')}` : `from ${moment(consultation.start_time).format('dddd, MMMM Do, h:mm a')} to ${moment(consultation.end_time).format('dddd, MMMM Do, h:mm a')}`}`
+        }],
+    }, {
+        conversation: {
+            memory: {}
+        }
+    });
+
+    Conversationid.findOne({ conversationid: received.conversation.id }, (err, obj) => {
+        if (obj) {
+            let studentid = obj.fbid;
+            console.log(studentid);
+            Consultations.find({ studentID: studentid }, (err2, consultations) => {
+                console.log(consultation);
+                if (consultations.length > 0) {
+
+                    consultations.map((consultation) => {
+                        Teachers.findOne({ _id: consultation.teacherID }, (err3, teacher) => {
+                            if (teacher) {
+                                Section.findOne({ _id: consultation.sectionID }, (err4, section) => {
+                                    if (section) {
+                                        
+                                    }
+                                })
+                            }
+                        });
+                    });
+                } else {
+                    let toSend = Object.assign({}, {
+                        replies: [{
+                            type: 'text',
+                            content: 'Hmm, I don\'t think you have a consultation scheduled yet.'
+                        }],
+                    }, {
+                            conversation: {
+                                memory: {}
+                            }
+                        });
+                    Conversationid.update({
+                        conversationid: received.conversation.id
+                    }, {
+                            $set: {
+                                conversationid: undefined
+                            }
+                        });
+                    res.send(toSend);
+                }
+            })
+        }
+    });
+
+    Conversationid.update({
+        conversationid: received.conversation.id
+    }, {
+        $set: {
+            conversationid: undefined
+        }
+    });
+    res.send(toSend);
+});
+
 app.post('/next-consultation', (req, res) => {
     let received = req.body;
 
@@ -829,7 +899,7 @@ app.post('/next-consultation', (req, res) => {
         if (obj) {
             let studentid = obj.fbid;
             console.log(studentid);
-            Consultations.findOne({ studentID: studentid }, (err2, consultation) => {
+            Consultations.findOne({ studentID: studentid },{ sort: { 'startDate' : -1 } }, (err2, consultation) => {
                 console.log(consultation);
                 if (consultation) {
                     Teachers.findOne({ _id: consultation.teacherID }, (err3, teacher) => {
