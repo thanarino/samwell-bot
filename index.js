@@ -863,7 +863,6 @@ app.post('/all-consultations', (req, res) => {
                     });
 
                     Promise.all(promises).then(results => {
-                        console.log(results);
                         results.map((result) => toSend.replies.push(result));
 
                         toSend.replies.unshift({
@@ -877,7 +876,8 @@ app.post('/all-consultations', (req, res) => {
                             $set: {
                                 conversationid: undefined
                             }
-                        });
+                            });
+                        console.log(toSend.replies);
                         res.send(toSend);
                     }).catch(e => console.log(e));
                 } else {
