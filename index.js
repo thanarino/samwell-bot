@@ -822,6 +822,23 @@ app.post("/verify-class-enlisted", (req, res) => {
     })
 });
 
+getConsultationInfo = (consultation, c_date) => {
+    return new Promise((resolve, reject) => {
+        Teachers.findOne({ _id: consultation.teacherID }, (err3, teacher) => {
+            if (teacher) {
+                Section.findOne({ _id: consultation.sectionID }, (err4, section) => {
+                    if (section) {
+                        resolve({
+                            type: 'text',
+                            content: `${section.subject} - ${section.sectionName} with ${teacher.gender === 'male' ? `Sir` : `Ma'am`} ${teacher.given_name} ${teacher.family_name} ${`on ${moment(c_date).format('dddd, MMMM Do')} from ${moment(consultation.startTime, 'hh:mm').format('h:mm a')} to ${moment(consultation.endTime, 'hh:mm').format('h:mm a')}`}.`
+                        });
+                    }
+                });
+            }
+        });
+    });
+}
+
 app.post('/all-consultations', (req, res) => {
     let received = req.body;
 
@@ -840,21 +857,12 @@ app.post('/all-consultations', (req, res) => {
             Consultations.find({ studentID: studentid, isDone: false, isApprovedByStudent: true, isApprovedByTeacher: true }).sort({ 'startDate.$date': -1 }).limit(5).exec((err2, consultations) => {
                 console.log(consultations);
                 if (consultations.length > 0) {
-                    consultations.map((consultation) => {
+                    let promises = consultations.map((consultation) => {
                         let c_date = moment().dayOfYear(consultation.date).set({ 'year': consultation.year });
-                        Teachers.findOne({ _id: consultation.teacherID }, (err3, teacher) => {
-                            if (teacher) {
-                                Section.findOne({ _id: consultation.sectionID }, (err4, section) => {
-                                    if (section) {
-                                        toSend.replies.push({
-                                            type: 'text',
-                                            content: `${section.subject} - ${section.sectionName} with ${teacher.gender === 'male' ? `Sir` : `Ma'am`} ${teacher.given_name} ${teacher.family_name} ${`on ${moment(c_date).format('dddd, MMMM Do')} from ${moment(consultation.startTime, 'hh:mm').format('h:mm a')} to ${moment(consultation.endTime, 'hh:mm').format('h:mm a')}`}.`
-                                        })
-                                    }
-                                })
-                            }
-                        });
+                        return getConsultationInfo(consultation, c_date).then((reply) => { return reply });
                     });
+
+                    Promise.all(promises).then(results => results.map((result) => toSend.replies.push(result))).catch(e => console.log(e));
                 } else {
                     let toSenderr = Object.assign({}, {
                         replies: [{
