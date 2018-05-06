@@ -862,7 +862,10 @@ app.post('/all-consultations', (req, res) => {
                         return getConsultationInfo(consultation, c_date).then((reply) => { return reply });
                     });
 
-                    Promise.all(promises).then(results => results.map((result) => toSend.replies.push(result))).catch(e => console.log(e));
+                    Promise.all(promises).then(results => {
+                        console.log(results);
+                        results.map((result) => toSend.replies.push(result))
+                    }).catch(e => console.log(e));
                 } else {
                     let toSenderr = Object.assign({}, {
                         replies: [{
