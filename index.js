@@ -864,7 +864,21 @@ app.post('/all-consultations', (req, res) => {
 
                     Promise.all(promises).then(results => {
                         console.log(results);
-                        results.map((result) => toSend.replies.push(result))
+                        results.map((result) => toSend.replies.push(result));
+
+                        toSend.replies.unshift({
+                            type: 'text',
+                            content: `${toSend.replies.length === 5 ? `It seems that you have many pending consultations. Here are your 5 nearest ones: `:`Here are your ${toSend.replies.length} pending consultations: `}`
+                        });
+
+                        Conversationid.update({
+                            conversationid: received.conversation.id
+                        }, {
+                            $set: {
+                                conversationid: undefined
+                            }
+                        });
+                        res.send(toSend);
                     }).catch(e => console.log(e));
                 } else {
                     let toSenderr = Object.assign({}, {
@@ -888,21 +902,7 @@ app.post('/all-consultations', (req, res) => {
                 }
             });
         }
-    }).then(() => {
-        toSend.replies.unshift({
-            type: 'text',
-            content: `${toSend.replies.length === 5 ? `It seems that you have many pending consultations. Here are your 5 nearest ones: `:`Here are your ${toSend.replies.length} pending consultations: `}`
-        });
-
-        Conversationid.update({
-            conversationid: received.conversation.id
-        }, {
-            $set: {
-                conversationid: undefined
-            }
-        });
-        res.send(toSend);
-    });
+    })
 });
 
 app.post('/next-consultation', (req, res) => {
