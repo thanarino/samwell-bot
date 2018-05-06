@@ -901,6 +901,7 @@ app.post('/next-consultation', (req, res) => {
             console.log(studentid);
             Consultations.findOne({ studentID: studentid }).sort({ 'startDate.$date': -1 }).exec((err2, consultation) => {
                 console.log(consultation);
+                let c_date = moment().dayOfYear(consultation.date).set({ 'year': consultation.year });
                 if (consultation) {
                     Teachers.findOne({ _id: consultation.teacherID }, (err3, teacher) => {
                         if (teacher) {
@@ -912,7 +913,7 @@ app.post('/next-consultation', (req, res) => {
                                             content: 'Okay here is your next consultation: '
                                         }, {
                                             type: 'text',
-                                            content: `${section.subject} - ${section.sectionName} with ${teacher.gender === 'male' ? `Sir` : `Ma'am`} ${teacher.given_name} ${teacher.family_name} ${moment(consultation.start_time).format('MMMM Do, YYYY') === moment(consultation.end_time).format('MMMM Do, YYYY') ? `on ${moment(consultation.end_time).format('dddd, MMMM Do')} from ${moment(consultation.start_time).format('h:mm a')} to ${moment(consultation.end_time).format('h:mm a')}` : `from ${moment(consultation.start_time).format('dddd, MMMM Do, h:mm a')} to ${moment(consultation.end_time).format('dddd, MMMM Do, h:mm a')}`}`
+                                            content: `${section.subject} - ${section.sectionName} with ${teacher.gender === 'male' ? `Sir` : `Ma'am`} ${teacher.given_name} ${teacher.family_name} ${`on ${moment(c_date).format('dddd, MMMM Do')} from ${moment(consultation.startTime).format('h:mm a')} to ${moment(consultation.endTime).format('h:mm a')}`}`
                                         }],
                                     }, {
                                             conversation: {
@@ -921,11 +922,7 @@ app.post('/next-consultation', (req, res) => {
                                         });
                                     Conversationid.update({
                                         conversationid: received.conversation.id
-                                    }, {
-                                            $set: {
-                                                conversationid: undefined
-                                            }
-                                        });
+                                    }, { $set: { conversationid: undefined } });
                                     res.send(toSend);
                                 }
                             })
