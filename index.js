@@ -1495,7 +1495,7 @@ analyzeEntities = (sender, res, input) => {
                         }
                     });
                 }
-            } else if (res.intents[0].slug === "confirmentry" || res.intents[0].slug === "getcode" || res.intents[0].slug === "verifycode" || res.intents[0].slug === 'checkavailable' || res.intents[0].slug === 'seeavailable' || res.intents[0].slug === 'nextconsultation' || res.intents[0].slug === 'allconsultations' || res.intents[0].slug === 'help') {
+            } else if (res.intents[0].slug === "greetings" || res.intents[0].slug === "goodbye" ||  res.intents[0].slug === "confirmentry" || res.intents[0].slug === "getcode" || res.intents[0].slug === "verifycode" || res.intents[0].slug === 'checkavailable' || res.intents[0].slug === 'seeavailable' || res.intents[0].slug === 'nextconsultation' || res.intents[0].slug === 'allconsultations' || res.intents[0].slug === 'help') {
                 // conversationId = (typeof conversationId === 'undefined') ? Math.floor((Math.random() * 1000000) + 1) : conversationId;
                 build.dialog({
                         type: 'text',
