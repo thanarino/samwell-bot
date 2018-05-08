@@ -1557,41 +1557,17 @@ analyzeEntities = (sender, res, input) => {
                         });
                         // conversationID = undefined;
                     })
-            } else {
-                build.dialog({
-                    type: 'text',
-                    content: input
-                }, {
-                        conversationId: conversationID
-                    })
-                    .then(res => {
-                        console.log(res);
-                        conversationId = res.conversation.id;
-                        res.messages.map((message) => {
-                            if (message.type === 'quickReplies') {
-                                sendQuickReply(sender, message.content);
-                            } else {
-                                sendMessage(sender, {
-                                    text: message.content
-                                });
-                            }
-                        });
-                    })
-                    .catch((err) => {
-                        sendMessage(sender, {
-                            text: 'Oops, we got an error from Recast.ai, our magic Human Understandinator(tm). Please try again.'
-                        }).catch(console.error);
-                        console.log(err.stack || err);
-                        Conversationid.update({
-                            fbid: sender
-                        }, {
-                                $set: {
-                                    conversationid: undefined
-                                }
-                            });
-                        // conversationID = undefined;
-                    })
             }
+        } else {
+            sendMessage(sender, {
+                text: 'I can\'t seem to understand what you\'ve said. Please try again or contact the Maker at arinojonathan@gmail.com if you think I am at fault.'});
+            Conversationid.update({
+                fbid: sender
+            }, {
+                $set: {
+                    conversationid: undefined
+                }
+            });
         }
     })
 }
