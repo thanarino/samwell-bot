@@ -931,7 +931,7 @@ app.post('/next-consultation', (req, res) => {
                                                 content: 'Okay here is your next consultation: '
                                             }
                                         ],
-                                    }, {
+                                    }, { 
                                             conversation: {
                                                 memory: {}
                                             }
