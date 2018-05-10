@@ -709,11 +709,11 @@ app.post("/verify-class-enlisted", (req, res) => {
     let start_time = received.conversation.memory.start_time;
     let end_time = received.conversation.memory.end_time;
 
-
     Conversationid.findOne({
         conversationid: req.body.conversation.id
     }, function (err, obj) {
         if (obj) {
+            console.log('obj: ', obj);
             Section.findOne({
                 sectionName: section,
                 subject: subject,
@@ -721,7 +721,7 @@ app.post("/verify-class-enlisted", (req, res) => {
                 isDeleted: false
             }, function (err2, obj2) {
                 if (obj2) {
-                    console.log(obj2);
+                    console.log('obj2: ',obj2);
                     if (obj2.teacherList.length > 1) {
                         //if many teachers in a classroom
                     } else if (obj2.teacherList.length == 1) {
@@ -818,6 +818,8 @@ app.post("/verify-class-enlisted", (req, res) => {
                     res.send(toSend);
                 }
             })
+        } else {
+            console.log('err: ', err);
         }
     })
 });
