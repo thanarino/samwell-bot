@@ -724,6 +724,24 @@ app.post("/verify-class-enlisted", (req, res) => {
                     console.log('obj2: ',obj2);
                     if (obj2.teacherList.length > 1) {
                         //if many teachers in a classroom
+                        let toSend = Object.assign({}, {
+                            replies: [{
+                                type: 'text',
+                                content: 'It seems that there are more that one teachers in this class, a feature that is not implemented yet. Please contact the administrator to fix this problem.'
+                            }],
+                        }, {
+                                conversation: {
+                                    memory: {}
+                                }
+                            });
+                        Conversationid.update({
+                            conversationid: received.conversation.id
+                        }, {
+                                $set: {
+                                    conversationid: undefined
+                                }
+                            });
+                        res.send(toSend);
                     } else if (obj2.teacherList.length == 1) {
                         Teachers.findOne({
                             _id: obj2.teacherList[0]
