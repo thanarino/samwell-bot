@@ -150,10 +150,6 @@ app.post("/verify-class", (req, res) => {
                 replies: [{
                         type: 'text',
                         content: 'Your teacher should have provided a code to enter this section. What is it?'
-                    },
-                    {
-                        type: 'text',
-                        content: 'Section found!!'
                     }
                 ]
             }, {
