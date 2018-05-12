@@ -1110,29 +1110,6 @@ app.post("/verify-consultation-hours", (req, res) => {
     let u_start = moment(received.conversation.memory.start_time);
     let u_end = moment(received.conversation.memory.end_time);
 
-    let now = moment();
-
-    if (u_start <= now || u_end <= now) {
-        let toSend = Object.assign({}, {
-            replies: [{
-                type: 'text',
-                content: 'It seems that you\'ve scheduled to a past date or an immediate time. Please try again. If you want a consultation immediately, please try to check if the professor entertains consultations right now.'
-            }],
-        }, {
-                conversation: {
-                    memory: {}
-                }
-            });
-        Conversationid.update({
-            conversationid: received.conversation.id
-        }, {
-                $set: {
-                    conversationid: undefined
-                }
-            });
-        res.send(toSend);
-    }
-
     if (u_end - u_start <= 0) {
         let toSend = Object.assign({}, {
             replies: [{
