@@ -533,7 +533,7 @@ app.post("/see-available", (req, res) => {
     let gender = received.conversation.memory.gender.value;
     let date = received.conversation.memory.datetime.iso;
     let family_name = _.lowerCase(received.conversation.memory.surname.raw);
-    family_name = _.capitalize(family_name);
+    family_name = _.startCase(_.camelCase(family_name));
 
     let results = [];
 
@@ -935,7 +935,7 @@ app.post('/next-consultation', (req, res) => {
             Consultations.findOne({ studentID: studentid, isDone: false, isApprovedByStudent: true, isApprovedByTeacher: true, startDate: { $gte: new Date() } }).sort({ 'startDate.$date': -1 }).exec((err2, consultation) => {
                 console.log(consultation);
                 let c_date = moment().dayOfYear(consultation.date).set({ 'year': consultation.year });
-                if (consultation) {
+                if (consultation) { 
                     Teachers.findOne({ _id: consultation.teacherID }, (err3, teacher) => {
                         if (teacher) {
                             Section.findOne({ _id: consultation.sectionID }, (err4, section) => {
