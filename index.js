@@ -504,7 +504,7 @@ app.post("/check-available", (req, res) => {
                     let toSend = Object.assign({}, {
                         replies: [{
                             type: 'text',
-                            content: 'I can\'t seem to find a professor with that surname. Please check your spelling and try again.'
+                            content: 'I can\'t seem to find a professor of yours with that surname. Please check your spelling and try again.'
                         }],
                     }, {
                         conversation: {
