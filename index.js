@@ -673,6 +673,25 @@ app.post("/see-available", (req, res) => {
                                         res.send(toSend);
                                     }
                                 })
+                            } else {
+                                let toSend = Object.assign({}, {
+                                    replies: [{
+                                        type: 'text',
+                                        content: 'There seems to be an error. Please try again. If problem persists, please contact administrator.'
+                                    }],
+                                }, {
+                                    conversation: {
+                                        memory: {}
+                                    }
+                                });
+                                Conversationid.update({
+                                    conversationid: received.conversation.id
+                                }, {
+                                    $set: {
+                                        conversationid: undefined
+                                    }
+                                });
+                                res.send(toSend);
                             }
                         });
                     } else {
