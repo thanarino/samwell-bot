@@ -455,7 +455,7 @@ app.post("/check-available", (req, res) => {
 
     let gender = received.conversation.memory.gender.value;
     let family_name = _.lowerCase(received.conversation.memory.person.raw);
-    family_name = _.capitalize(family_name);
+    family_name = _.startCase(_.camelCase(family_name));
 
     let results = [];
 
@@ -677,7 +677,7 @@ app.post("/see-available", (req, res) => {
                                 let toSend = Object.assign({}, {
                                     replies: [{
                                         type: 'text',
-                                        content: 'There seems to be an error. Please try again. If problem persists, please contact administrator.'
+                                        content: 'I can\'t seem to find a professor of yours with that surname. Please check your spelling and try again.'
                                     }],
                                 }, {
                                     conversation: {
@@ -699,7 +699,7 @@ app.post("/see-available", (req, res) => {
                         let toSend = Object.assign({}, {
                             replies: [{
                                 type: 'text',
-                                content: 'I can\'t seem to find a professor with that surname. Please check your spelling and try again.'
+                                content: 'I can\'t seem to find a professor of yours with that surname. Please check your spelling and try again.'
                             }],
                         }, {
                                 conversation: {
