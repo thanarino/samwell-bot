@@ -321,7 +321,7 @@ app.post("/confirm-consultation", (req, res) => {
                 let toSend = Object.assign({}, {
                     replies: [{
                         type: 'text',
-                        content: 'Not to hurt your pride and/or ego, but I think you misspelled some things there (subject or section, most likely). Please try again.'
+                        content: 'I can\'t find the class you requested. Please check your spelling and make sure that you are enlisted in that class first.'
                     }],
                 }, {
                     conversation: {
@@ -493,6 +493,25 @@ app.post("/check-available", (req, res) => {
                                 })
                             })
                             returnResults(res, received, results);
+                        } else {
+                            let toSend = Object.assign({}, {
+                                replies: [{
+                                    type: 'text',
+                                    content: 'Please check if you are enlisted in a section where the professor you requested teaches. If yes, then try again.'
+                                }],
+                            }, {
+                                    conversation: {
+                                        memory: {}
+                                    }
+                                });
+                            Conversationid.update({
+                                conversationid: received.conversation.id
+                            }, {
+                                    $set: {
+                                        conversationid: undefined
+                                    }
+                                });
+                            res.send(toSend);
                         }
                     });
                 } else {
