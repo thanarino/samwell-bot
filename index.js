@@ -919,7 +919,7 @@ app.post('/all-consultations', (req, res) => {
                     let toSenderr = Object.assign({}, {
                         replies: [{
                             type: 'text',
-                            content: 'Hmm, I don\'t think you have a consultation scheduled yet.'
+                            content: 'Hmm, I don\'t think you have an approved consultation scheduled yet, or your professor might have not approved your requested consultation/s yet.'
                         }],
                     }, {
                             conversation: {
@@ -984,7 +984,7 @@ app.post('/next-consultation', (req, res) => {
                     let toSend = Object.assign({}, {
                         replies: [{
                             type: 'text',
-                            content: 'Hmm, I don\'t think you have a consultation scheduled yet.'
+                            content: 'Hmm, I don\'t think you have an approved consultation scheduled yet, or your professor might have not approved your requested consultation/s yet.'
                         }],
                     }, {
                             conversation: {
@@ -1266,7 +1266,7 @@ app.post("/verify-consultation-hours", (req, res) => {
                                                         let toSend = Object.assign({}, {
                                                             replies: [{
                                                                 type: 'text',
-                                                                content: 'Alright! Don\'t forget your consultation!'
+                                                                content: `Your request for a consultation is now sent to ${teacher.gender=='male' ? `Sir` : `Ma'am`} ${teacher.family_name} for approval. Please check your consultations every now and then to check if ${teacher.gender=='male'? `he`:`she`} has approved your request.`
                                                             }],
                                                         }, {
                                                             conversation: {
