@@ -1209,251 +1209,251 @@ app.post("/verify-consultation-hours", (req, res) => {
             }
         });
         res.send(toSend);
-    }
+    } else {
+        let weekday = u_start.format('dddd');
+        console.log(weekday);
+        teacher.consultationHours.map((day) => {
+            console.log(day);
+            if (day.fullName === weekday) {
+                if (day.time.length === 0) {
+                    let toSend = Object.assign({}, {
+                        replies: [{
+                            type: 'text',
+                            content: `There doesn\'t seem to be scheduled consultation hours every ${day.fullName} for ${teacher.gender === 'male' ? `Sir` : `Ma'am`} ${teacher.family_name}. Try scheduling for another date.`
+                        }],
+                    }, {
+                            conversation: {
+                                memory: {}
+                            }
+                        });
+                    Conversationid.update({
+                        conversationid: received.conversation.id
+                    }, {
+                            $set: {
+                                conversationid: undefined
+                            }
+                        });
+                    res.send(toSend);
+                } else {
+                    let tripcheck = day.time.some((time) => checkConsultationHoursConflict(time, u_start, u_end, t_id));
+                    if (tripcheck) {
+                        var tripcheck2;
+                        checkConsultationConflict(u_start, u_end, t_id).then((result) => {
+                            tripcheck2 = result;
 
-    let weekday = u_start.format('dddd');
-    console.log(weekday);
-    teacher.consultationHours.map((day) => {
-        console.log(day);
-        if (day.fullName === weekday) {
-            if (day.time.length === 0) {
-                let toSend = Object.assign({}, {
-                    replies: [{
-                        type: 'text',
-                        content: `There doesn\'t seem to be scheduled consultation hours every ${day.fullName} for ${teacher.gender === 'male' ? `Sir` : `Ma'am`} ${teacher.family_name}. Try scheduling for another date.`
-                    }],
-                }, {
-                    conversation: {
-                        memory: {}
-                    }
-                });
-                Conversationid.update({
-                    conversationid: received.conversation.id
-                }, {
-                    $set: {
-                        conversationid: undefined
-                    }
-                });
-                res.send(toSend);
-            } else {
-                let tripcheck = day.time.some((time) => checkConsultationHoursConflict(time, u_start, u_end, t_id));
-                if (tripcheck) {
-                    var tripcheck2;
-                    checkConsultationConflict(u_start, u_end, t_id).then((result) => {
-                        tripcheck2 = result;
+                            console.log(tripcheck2);
+                            if (_.includes(tripcheck2, true)) {
+                                //schedule here
 
-                        console.log(tripcheck2);
-                        if (_.includes(tripcheck2, true)) {
-                            //schedule here
-
-                            Section.findOne({
-                                sectionName: section,
-                                subject: subject
-                            }, (err, classFound) => {
-                                if (classFound) {
-                                    let sem_start = moment().dayOfYear(classFound.semester.start).set({
-                                        'year': classFound.semester.startYear
-                                    });
-                                    let sem_end = moment().dayOfYear(classFound.semester.end).set({
-                                        'year': classFound.semester.endYear
-                                    });
-
-                                    console.log(`sem_start: ${sem_start}`);
-                                    console.log(`sem_end: ${sem_end}`);
-                                    console.log(`u_start: ${u_start}`);
-                                    console.log(`u_end: ${u_end}`);
-
-                                    if (sem_start - u_start > 0) {
-                                        let toSend = Object.assign({}, {
-                                            replies: [{
-                                                type: 'text',
-                                                content: 'I commend you for your eagerness, but you can\'t schedule a consultation before the semester officially starts. Please try scheduling at a later date.'
-                                            }],
-                                        }, {
-                                            conversation: {
-                                                memory: {}
-                                            }
+                                Section.findOne({
+                                    sectionName: section,
+                                    subject: subject
+                                }, (err, classFound) => {
+                                    if (classFound) {
+                                        let sem_start = moment().dayOfYear(classFound.semester.start).set({
+                                            'year': classFound.semester.startYear
                                         });
-                                        Conversationid.update({
-                                            conversationid: received.conversation.id
-                                        }, {
-                                            $set: {
-                                                conversationid: undefined
-                                            }
+                                        let sem_end = moment().dayOfYear(classFound.semester.end).set({
+                                            'year': classFound.semester.endYear
                                         });
-                                        res.send(toSend);
-                                    } else if (sem_end - u_end < 0) {
-                                        let toSend = Object.assign({}, {
-                                            replies: [{
-                                                type: 'text',
-                                                content: 'I\'m really sorry, but you can\'t schedule a consultation after the semester officially ends. Please try scheduling at an earlier date.'
-                                            }],
-                                        }, {
-                                            conversation: {
-                                                memory: {}
-                                            }
-                                        });
-                                        Conversationid.update({
-                                            conversationid: received.conversation.id
-                                        }, {
-                                            $set: {
-                                                conversationid: undefined
-                                            }
-                                        });
-                                        res.send(toSend);
-                                    } else {
-                                        Conversationid.findOne({
-                                            conversationid: received.conversation.id
-                                        }, function (err, obj) {
-                                            if (obj) {
-                                                Consultations.create({
-                                                    _id: (Math.random() * 1e20).toString(36),
-                                                    userID: obj.fbid,
-                                                    studentID: obj.fbid,
-                                                    teacherID: t_id,
-                                                    sectionID: classFound._id,
-                                                    startTime: u_start.format('HH:mm'),
-                                                    endTime: u_end.format('HH:mm'),
-                                                    date: u_start.dayOfYear(),
-                                                    startDate: u_start.toDate(),
-                                                    year: u_start.get('year'),
-                                                    isDone: false,
-                                                    isDeleted: false,
-                                                    isApprovedByStudent: true,
-                                                    isApprovedByTeacher: false,
-                                                    createdAt: new Date()
-                                                }, function (err, returned) {
-                                                    if (err) {
-                                                        let toSend = Object.assign({}, {
-                                                            replies: [{
-                                                                type: 'text',
-                                                                content: 'Hmm, I think there\'s a problem with my memory right now. Please try again later.'
-                                                            }],
-                                                        }, {
-                                                            conversation: {
-                                                                memory: {}
-                                                            }
-                                                        });
-                                                        Conversationid.update({
-                                                            conversationid: received.conversation.id
-                                                        }, {
-                                                            $set: {
-                                                                conversationid: undefined
-                                                            }
-                                                        });
-                                                        res.send(toSend);
-                                                    } else {
-                                                        let toSend = Object.assign({}, {
-                                                            replies: [{
-                                                                type: 'text',
-                                                                content: `Your request for a consultation is now sent to ${teacher.gender=='male' ? `Sir` : `Ma'am`} ${teacher.family_name} for approval, which is not guaranteed since other students might have already requested a consultation at your timeslot. Please check your consultations every now and then to check if ${teacher.gender=='male'? `he`:`she`} has approved your request.`
-                                                            }],
-                                                        }, {
-                                                            conversation: {
-                                                                memory: {}
-                                                            }
-                                                        });
-                                                        Conversationid.update({
-                                                            conversationid: received.conversation.id
-                                                        }, {
-                                                            $set: {
-                                                                conversationid: undefined
-                                                            }
-                                                        });
-                                                        res.send(toSend);
-                                                    }
-                                                });
-                                            } else {
-                                                let toSend = Object.assign({}, {
-                                                    replies: [{
-                                                        type: 'text',
-                                                        content: 'There seems to be a problem :\\ No worries, just try again later.'
-                                                    }],
-                                                }, {
+
+                                        console.log(`sem_start: ${sem_start}`);
+                                        console.log(`sem_end: ${sem_end}`);
+                                        console.log(`u_start: ${u_start}`);
+                                        console.log(`u_end: ${u_end}`);
+
+                                        if (sem_start - u_start > 0) {
+                                            let toSend = Object.assign({}, {
+                                                replies: [{
+                                                    type: 'text',
+                                                    content: 'I commend you for your eagerness, but you can\'t schedule a consultation before the semester officially starts. Please try scheduling at a later date.'
+                                                }],
+                                            }, {
                                                     conversation: {
                                                         memory: {}
                                                     }
                                                 });
-                                                Conversationid.update({
-                                                    conversationid: received.conversation.id
-                                                }, {
+                                            Conversationid.update({
+                                                conversationid: received.conversation.id
+                                            }, {
                                                     $set: {
                                                         conversationid: undefined
                                                     }
                                                 });
-                                                res.send(toSend);
-                                            }
-                                        });
+                                            res.send(toSend);
+                                        } else if (sem_end - u_end < 0) {
+                                            let toSend = Object.assign({}, {
+                                                replies: [{
+                                                    type: 'text',
+                                                    content: 'I\'m really sorry, but you can\'t schedule a consultation after the semester officially ends. Please try scheduling at an earlier date.'
+                                                }],
+                                            }, {
+                                                    conversation: {
+                                                        memory: {}
+                                                    }
+                                                });
+                                            Conversationid.update({
+                                                conversationid: received.conversation.id
+                                            }, {
+                                                    $set: {
+                                                        conversationid: undefined
+                                                    }
+                                                });
+                                            res.send(toSend);
+                                        } else {
+                                            Conversationid.findOne({
+                                                conversationid: received.conversation.id
+                                            }, function (err, obj) {
+                                                if (obj) {
+                                                    Consultations.create({
+                                                        _id: (Math.random() * 1e20).toString(36),
+                                                        userID: obj.fbid,
+                                                        studentID: obj.fbid,
+                                                        teacherID: t_id,
+                                                        sectionID: classFound._id,
+                                                        startTime: u_start.format('HH:mm'),
+                                                        endTime: u_end.format('HH:mm'),
+                                                        date: u_start.dayOfYear(),
+                                                        startDate: u_start.toDate(),
+                                                        year: u_start.get('year'),
+                                                        isDone: false,
+                                                        isDeleted: false,
+                                                        isApprovedByStudent: true,
+                                                        isApprovedByTeacher: false,
+                                                        createdAt: new Date()
+                                                    }, function (err, returned) {
+                                                        if (err) {
+                                                            let toSend = Object.assign({}, {
+                                                                replies: [{
+                                                                    type: 'text',
+                                                                    content: 'Hmm, I think there\'s a problem with my memory right now. Please try again later.'
+                                                                }],
+                                                            }, {
+                                                                    conversation: {
+                                                                        memory: {}
+                                                                    }
+                                                                });
+                                                            Conversationid.update({
+                                                                conversationid: received.conversation.id
+                                                            }, {
+                                                                    $set: {
+                                                                        conversationid: undefined
+                                                                    }
+                                                                });
+                                                            res.send(toSend);
+                                                        } else {
+                                                            let toSend = Object.assign({}, {
+                                                                replies: [{
+                                                                    type: 'text',
+                                                                    content: `Your request for a consultation is now sent to ${teacher.gender == 'male' ? `Sir` : `Ma'am`} ${teacher.family_name} for approval, which is not guaranteed since other students might have already requested a consultation at your timeslot. Please check your consultations every now and then to check if ${teacher.gender == 'male' ? `he` : `she`} has approved your request.`
+                                                                }],
+                                                            }, {
+                                                                    conversation: {
+                                                                        memory: {}
+                                                                    }
+                                                                });
+                                                            Conversationid.update({
+                                                                conversationid: received.conversation.id
+                                                            }, {
+                                                                    $set: {
+                                                                        conversationid: undefined
+                                                                    }
+                                                                });
+                                                            res.send(toSend);
+                                                        }
+                                                    });
+                                                } else {
+                                                    let toSend = Object.assign({}, {
+                                                        replies: [{
+                                                            type: 'text',
+                                                            content: 'There seems to be a problem :\\ No worries, just try again later.'
+                                                        }],
+                                                    }, {
+                                                            conversation: {
+                                                                memory: {}
+                                                            }
+                                                        });
+                                                    Conversationid.update({
+                                                        conversationid: received.conversation.id
+                                                    }, {
+                                                            $set: {
+                                                                conversationid: undefined
+                                                            }
+                                                        });
+                                                    res.send(toSend);
+                                                }
+                                            });
+                                        }
+                                    } else {
+                                        let toSend = Object.assign({}, {
+                                            replies: [{
+                                                type: 'text',
+                                                content: 'There seems to be a problem :\\ No worries, just contact the developer at arinojonathan@gmail.com for details.'
+                                            }],
+                                        }, {
+                                                conversation: {
+                                                    memory: {}
+                                                }
+                                            });
+                                        Conversationid.update({
+                                            conversationid: received.conversation.id
+                                        }, {
+                                                $set: {
+                                                    conversationid: undefined
+                                                }
+                                            });
+                                        res.send(toSend);
                                     }
-                                } else {
-                                    let toSend = Object.assign({}, {
-                                        replies: [{
-                                            type: 'text',
-                                            content: 'There seems to be a problem :\\ No worries, just contact the developer at arinojonathan@gmail.com for details.'
-                                        }],
-                                    }, {
-                                            conversation: {
-                                                memory: {}
-                                            }
-                                        });
-                                    Conversationid.update({
-                                        conversationid: received.conversation.id
-                                    }, {
-                                            $set: {
-                                                conversationid: undefined
-                                            }
-                                        });
-                                    res.send(toSend);
-                                }
-                            });
-                        } else {
-                            //error, conflict with other consultations
-                            let toSend = Object.assign({}, {
-                                replies: [{
-                                    type: 'text',
-                                    content: 'Looks like your prof\'s in demand -- there\'s already an approved consultation set in that timeslot. Please schedule in another.'
-                                }],
-                            }, {
+                                });
+                            } else {
+                                //error, conflict with other consultations
+                                let toSend = Object.assign({}, {
+                                    replies: [{
+                                        type: 'text',
+                                        content: 'Looks like your prof\'s in demand -- there\'s already an approved consultation set in that timeslot. Please schedule in another.'
+                                    }],
+                                }, {
+                                        conversation: {
+                                            memory: {}
+                                        }
+                                    });
+                                Conversationid.update({
+                                    conversationid: received.conversation.id
+                                }, {
+                                        $set: {
+                                            conversationid: undefined
+                                        }
+                                    });
+                                res.send(toSend);
+                                //TODO: SEND CONSULTATION HOURS OF PROFESSOR
+                            }
+                        });
+                    } else {
+                        //error, conflict with consultation hours
+                        let toSend = Object.assign({}, {
+                            replies: [{
+                                type: 'text',
+                                content: 'Remember that you can only schedule a consultation within the professor\'s consultation hours. Please schedule in another timeslot.'
+                            }],
+                        }, {
                                 conversation: {
                                     memory: {}
                                 }
                             });
-                            Conversationid.update({
-                                conversationid: received.conversation.id
-                            }, {
+                        Conversationid.update({
+                            conversationid: received.conversation.id
+                        }, {
                                 $set: {
                                     conversationid: undefined
                                 }
                             });
-                            res.send(toSend);
-                            //TODO: SEND CONSULTATION HOURS OF PROFESSOR
-                        }
-                    });
-                } else {
-                    //error, conflict with consultation hours
-                    let toSend = Object.assign({}, {
-                        replies: [{
-                            type: 'text',
-                            content: 'Remember that you can only schedule a consultation within the professor\'s consultation hours. Please schedule in another timeslot.'
-                        }],
-                    }, {
-                        conversation: {
-                            memory: {}
-                        }
-                    });
-                    Conversationid.update({
-                        conversationid: received.conversation.id
-                    }, {
-                        $set: {
-                            conversationid: undefined
-                        }
-                    });
-                    res.send(toSend);
-                    //TODO: SEND CONSULTATION HOURS OF PROFESSOR
+                        res.send(toSend);
+                        //TODO: SEND CONSULTATION HOURS OF PROFESSOR
+                    }
                 }
             }
-        }
-    });
+        });
+    }
 })
 
 analyzeEntities = (sender, res, input) => {
