@@ -293,7 +293,10 @@ app.post("/confirm-consultation", (req, res) => {
         end_time = received.conversation.memory.end.iso;
     }
 
-    if (moment(start_time) - moment() < 0 || moment(end_time) - moment() < 0) {
+    let m_start = moment(start_time);
+    let m_end = moment(end_time).set({ 'year': m_start.get('year'), 'month': m_start.get('month'), 'date': m_start.get('date') });
+
+    if (m_start - moment() < 0 || m_end - moment() < 0) {
         let toSend = Object.assign({}, {
             replies: [{
                 type: 'text',
@@ -341,7 +344,7 @@ app.post("/confirm-consultation", (req, res) => {
                     replies: [{
                         type: 'quickReplies',
                         content: {
-                            title: `You want to schedule a consultation for the class ${subject} ${section} ${moment(start_time).format('MMMM Do, YYYY') === moment(end_time).format('MMMM Do, YYYY') ? `on ${moment(end_time).format('dddd, MMMM Do')} from ${moment(start_time).format('h:mm a')} to ${moment(end_time).format('h:mm a')}` : `from ${moment(start_time).format('dddd, MMMM Do, h:mm a')} to ${moment(end_time).format('dddd, MMMM Do, h:mm a')}`}?`,
+                            title: `You want to schedule a consultation for the class ${subject} ${section} ${m_start.format('MMMM Do, YYYY') === m_end.format('MMMM Do, YYYY') ? `on ${m_end.format('dddd, MMMM Do')} from ${m_start.format('h:mm a')} to ${m_end.format('h:mm a')}` : `from ${m_start.format('dddd, MMMM Do, h:mm a')} to ${m_end.format('dddd, MMMM Do, h:mm a')}`}?`,
                             buttons: [{
                                 title: 'Yes',
                                 value: 'Yes'
@@ -354,8 +357,8 @@ app.post("/confirm-consultation", (req, res) => {
                 }, {
                     conversation: {
                         memory: Object.assign({}, received.conversation.memory, {
-                            start_time: start_time,
-                            end_time: end_time
+                            start_time: m_start,
+                            end_time: m_end
                         })
                     }
                 });
@@ -872,6 +875,24 @@ app.post("/verify-class-enlisted", (req, res) => {
             })
         } else {
             console.log('err: ', err);
+            let toSend = Object.assign({}, {
+                replies: [{
+                    type: 'text',
+                    content: 'Something went wrong. Please try to contact the developer at arinojonathan@gmail.com.'
+                }],
+            }, {
+                    conversation: {
+                        memory: {}
+                    }
+                });
+            Conversationid.update({
+                conversationid: received.conversation.id
+            }, {
+                    $set: {
+                        conversationid: undefined
+                    }
+                });
+            res.send(toSend);
         }
     })
 });
@@ -1127,13 +1148,13 @@ app.post("/verify-consultation-hours", (req, res) => {
 
     //format user inputted start and end times
     let u_start = moment(received.conversation.memory.start_time);
-    let u_end = moment(received.conversation.memory.end_time).set({ 'year': u_start.get('year'), 'month': u_start.get('month'), 'date':u_start.get('date')});
+    let u_end = moment(received.conversation.memory.end_time);
 
     if (u_end - u_start <= 0) {
         let toSend = Object.assign({}, {
             replies: [{
                 type: 'text',
-                content: 'Give me the Eye of Agamotto and I\'ll schedule you on that timeslot. Otherwise, feel free to try again. :)'
+                content: 'I can schedule you on that timeslot if I had the Time Stone, but sadly, Thanos has it. Please try your request again with a later end time.'
             }],
         }, {
             conversation: {
@@ -1150,16 +1171,16 @@ app.post("/verify-consultation-hours", (req, res) => {
         res.send(toSend);
     }
 
-    let weekday = moment(received.conversation.memory.start_time).format('dddd');
+    let weekday = u_start.format('dddd');
     console.log(weekday);
-    received.conversation.memory.teacher.consultationHours.map((day) => {
+    teacher.consultationHours.map((day) => {
         console.log(day);
         if (day.fullName === weekday) {
             if (day.time.length === 0) {
                 let toSend = Object.assign({}, {
                     replies: [{
                         type: 'text',
-                        content: 'There doesn\'t seem to be scheduled consultation hours for this day. Try scheduling for another date.'
+                        content: `There doesn\'t seem to be scheduled consultation hours every ${day.fullName} for ${teacher.gender === 'male' ? `Sir` : `Ma'am`} ${teacher.family_name}. Try scheduling for another date.`
                     }],
                 }, {
                     conversation: {
@@ -1324,6 +1345,25 @@ app.post("/verify-consultation-hours", (req, res) => {
                                             }
                                         });
                                     }
+                                } else {
+                                    let toSend = Object.assign({}, {
+                                        replies: [{
+                                            type: 'text',
+                                            content: 'There seems to be a problem :\\ No worries, just contact the developer at arinojonathan@gmail.com for details.'
+                                        }],
+                                    }, {
+                                            conversation: {
+                                                memory: {}
+                                            }
+                                        });
+                                    Conversationid.update({
+                                        conversationid: received.conversation.id
+                                    }, {
+                                            $set: {
+                                                conversationid: undefined
+                                            }
+                                        });
+                                    res.send(toSend);
                                 }
                             });
                         } else {
