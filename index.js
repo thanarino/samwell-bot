@@ -251,7 +251,7 @@ app.post("/verify-code", (req, res) => {
                     let toSend = Object.assign({}, {
                         replies: [{
                             type: 'text',
-                            content: 'Hmm, It looks like you entered the code wrong.'
+                            content: 'Hmm, It looks like you entered the code wrong. Please repeat your request, thanks :D'
                         }],
                     }, {
                         conversation: {
@@ -1127,7 +1127,7 @@ app.post("/verify-consultation-hours", (req, res) => {
 
     //format user inputted start and end times
     let u_start = moment(received.conversation.memory.start_time);
-    let u_end = moment(received.conversation.memory.end_time);
+    let u_end = moment(received.conversation.memory.end_time).set({ 'year': u_start.get('year'), 'month': u_start.get('month'), 'date':u_start.get('date')});
 
     if (u_end - u_start <= 0) {
         let toSend = Object.assign({}, {
