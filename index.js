@@ -300,7 +300,7 @@ app.post("/confirm-consultation", (req, res) => {
         let toSend = Object.assign({}, {
             replies: [{
                 type: 'text',
-                content: 'Sorry, but the DeLorean is broken right now. Please repeat your request (but with a later date).'
+                content: 'Sorry, but the Time Stone is with Thanos right now. Please repeat your request (but with a later date).'
             }],
         }, {
             conversation: {
@@ -539,6 +539,26 @@ app.post("/check-available", (req, res) => {
                     res.send(toSend);
                 }
             });
+        } else {
+            console.log('err: ', err);
+            let toSend = Object.assign({}, {
+                replies: [{
+                    type: 'text',
+                    content: 'Something went wrong. Please try to contact the developer at arinojonathan@gmail.com.'
+                }],
+            }, {
+                conversation: {
+                    memory: {}
+                }
+            });
+            Conversationid.update({
+                conversationid: received.conversation.id
+            }, {
+                $set: {
+                    conversationid: undefined
+                }
+            });
+            res.send(toSend);
         }
     });
 });
@@ -734,6 +754,26 @@ app.post("/see-available", (req, res) => {
                         res.send(toSend);
                     }
                 });
+        } else {
+            console.log('err: ', err);
+            let toSend = Object.assign({}, {
+                replies: [{
+                    type: 'text',
+                    content: 'Something went wrong. Please try to contact the developer at arinojonathan@gmail.com.'
+                }],
+            }, {
+                conversation: {
+                    memory: {}
+                }
+            });
+            Conversationid.update({
+                conversationid: received.conversation.id
+            }, {
+                $set: {
+                    conversationid: undefined
+                }
+            });
+            res.send(toSend);
         }
     });
 })
@@ -1306,7 +1346,7 @@ app.post("/verify-consultation-hours", (req, res) => {
                                                         let toSend = Object.assign({}, {
                                                             replies: [{
                                                                 type: 'text',
-                                                                content: `Your request for a consultation is now sent to ${teacher.gender=='male' ? `Sir` : `Ma'am`} ${teacher.family_name} for approval. Please check your consultations every now and then to check if ${teacher.gender=='male'? `he`:`she`} has approved your request.`
+                                                                content: `Your request for a consultation is now sent to ${teacher.gender=='male' ? `Sir` : `Ma'am`} ${teacher.family_name} for approval, which is not guaranteed since other students might have already requested a consultation at your timeslot. Please check your consultations every now and then to check if ${teacher.gender=='male'? `he`:`she`} has approved your request.`
                                                             }],
                                                         }, {
                                                             conversation: {
@@ -1371,7 +1411,7 @@ app.post("/verify-consultation-hours", (req, res) => {
                             let toSend = Object.assign({}, {
                                 replies: [{
                                     type: 'text',
-                                    content: 'Looks like your prof\'s in demand. Please schedule in another timeslot.'
+                                    content: 'Looks like your prof\'s in demand -- there\'s already an approved consultation set in that timeslot. Please schedule in another.'
                                 }],
                             }, {
                                 conversation: {
