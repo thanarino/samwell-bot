@@ -1057,7 +1057,8 @@ app.post('/next-consultation', (req, res) => {
         if (obj) {
             let studentid = obj.fbid;
             console.log(studentid);
-            Consultations.findOne({ studentID: studentid, isDone: false, isApprovedByStudent: true, isApprovedByTeacher: true, "startDate.$date": { $gte: new Date() } }).sort({ 'startDate.$date': -1 }).exec((err2, consultation) => {
+            let date = moment().add(8, 'hours').toDate();
+            Consultations.findOne({ studentID: studentid, isDone: false, isApprovedByStudent: true, isApprovedByTeacher: true, startDate: { $gte: date } }).sort({ 'startDate.$date': -1 }).exec((err2, consultation) => {
                 if (consultation) { 
                     console.log(consultation);
                     let c_date = moment().dayOfYear(consultation.date).set({ 'year': consultation.year });
