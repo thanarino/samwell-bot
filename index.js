@@ -997,9 +997,9 @@ app.post('/all-consultations', (req, res) => {
         if (obj) {
             let studentid = obj.fbid;
             console.log(studentid);
-            let date = new Date().toISOString();
+            let date = new Date.now();
             console.log(date);
-            Consultations.find({ studentID: studentid, isDone: false, isApprovedByStudent: true, isApprovedByTeacher: true, startDate: { $gte: date } }).sort({ 'startDate.$date': -1 }).limit(5).exec((err2, consultations) => {
+            Consultations.find({ studentID: studentid, isDone: false, isApprovedByStudent: true, isApprovedByTeacher: true, startDate: { $gt: date } }).sort({ 'startDate.$date': -1 }).limit(5).exec((err2, consultations) => {
                 console.log(consultations);
                 if (consultations.length > 0) {
                     let promises = consultations.map((consultation) => {
