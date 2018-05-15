@@ -997,7 +997,7 @@ app.post('/all-consultations', (req, res) => {
         if (obj) {
             let studentid = obj.fbid;
             console.log(studentid);
-            let date = moment().zone(8).toDate();
+            let date = moment().add(8, 'hours').toDate();
             console.log(date);
             Consultations.find({ studentID: studentid, isDone: false, isApprovedByStudent: true, isApprovedByTeacher: true, startDate: { $gt: date } }).sort({ 'startDate.$date': -1 }).limit(5).exec((err2, consultations) => {
                 console.log(consultations);
