@@ -313,7 +313,9 @@ app.post("/confirm-consultation", (req, res) => {
     let start_time = '';
     let end_time = '';
 
-    if (received.conversation.memory.start === undefined || received.conversation.memory.end === undefined) {
+    console.log('went here');
+
+    if (received.conversation.memory.start == undefined || received.conversation.memory.end == undefined) {
         let toSend = Object.assign({}, {
             replies: [{
                 type: 'text',
