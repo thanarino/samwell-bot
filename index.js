@@ -1577,7 +1577,6 @@ analyzeEntities = (sender, res, input) => {
                         sendMessage(sender, {
                             text: 'I can\'t recognize some things in your request. Please make sure you put a space in between times and the dash symbol if you have one.'
                         }).catch(console.error);
-                        console.log(err.stack || err);
                         Conversationid.update({
                             fbid: sender
                         }, {
