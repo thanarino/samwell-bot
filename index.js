@@ -313,86 +313,107 @@ app.post("/confirm-consultation", (req, res) => {
     let start_time = '';
     let end_time = '';
 
-    if (received.conversation.memory.interval) {
-        start_time = received.conversation.memory.interval.begin;
-        end_time = received.conversation.memory.interval.end;
-    } else {
-        start_time = received.conversation.memory.start.iso;
-        end_time = received.conversation.memory.end.iso;
-    }
-
-    let m_start = moment(start_time);
-    let m_end = moment(end_time).set({ 'year': m_start.get('year'), 'month': m_start.get('month'), 'date': m_start.get('date') });
-
-    if (m_start - moment() < 0 || m_end - moment() < 0) {
+    if (typeof received.conversation.memory.start === undefined || typeof received.conversation.memory.start === undefined) {
         let toSend = Object.assign({}, {
             replies: [{
                 type: 'text',
-                content: 'Sorry, but the Time Stone is with Thanos right now. Please repeat your request (but with a later date).'
+                content: 'It seems that you are lacking some information regarding the duration of the consultation. Please try to put spaces in between the times and the dash symbol if you are using one.'
             }],
         }, {
-            conversation: {
-                memory: {}
-            }
-        });
+                conversation: {
+                    memory: {}
+                }
+            });
         Conversationid.update({
             conversationid: received.conversation.id
         }, {
-            $set: {
-                conversationid: undefined
-            }
-        });
+                $set: {
+                    conversationid: undefined
+                }
+            });
         res.send(toSend);
     } else {
-        Section.findOne({
-            sectionName: section,
-            subject: subject,
-        }, function (err, obj) {
-            if (!obj) {
-                let toSend = Object.assign({}, {
-                    replies: [{
-                        type: 'text',
-                        content: 'I can\'t find the class you requested. Please check your spelling and make sure that you are enlisted in that class first.'
-                    }],
-                }, {
+        if (received.conversation.memory.interval) {
+            start_time = received.conversation.memory.interval.begin;
+            end_time = received.conversation.memory.interval.end;
+        } else {
+            start_time = received.conversation.memory.start.iso;
+            end_time = received.conversation.memory.end.iso;
+        }
+
+        let m_start = moment(start_time);
+        let m_end = moment(end_time).set({ 'year': m_start.get('year'), 'month': m_start.get('month'), 'date': m_start.get('date') });
+
+        if (m_start - moment() < 0 || m_end - moment() < 0) {
+            let toSend = Object.assign({}, {
+                replies: [{
+                    type: 'text',
+                    content: 'Sorry, but the Time Stone is with Thanos right now. Please repeat your request (but with a later date).'
+                }],
+            }, {
                     conversation: {
                         memory: {}
                     }
                 });
-                Conversationid.update({
-                    conversationid: received.conversation.id
-                }, {
+            Conversationid.update({
+                conversationid: received.conversation.id
+            }, {
                     $set: {
                         conversationid: undefined
                     }
                 });
-                res.send(toSend);
-            } else {
-                let toSend = Object.assign({}, {
-                    replies: [{
-                        type: 'quickReplies',
-                        content: {
-                            title: `You want to schedule a consultation for the class ${subject} ${section} ${m_start.format('MMMM Do, YYYY') === m_end.format('MMMM Do, YYYY') ? `on ${m_end.format('dddd, MMMM Do')} from ${m_start.format('h:mm a')} to ${m_end.format('h:mm a')}` : `from ${m_start.format('dddd, MMMM Do, h:mm a')} to ${m_end.format('dddd, MMMM Do, h:mm a')}`}?`,
-                            buttons: [{
-                                title: 'Yes',
-                                value: 'Yes'
-                            }, {
-                                title: 'No',
-                                value: 'No'
-                            }]
-                        }
-                    }],
-                }, {
-                    conversation: {
-                        memory: Object.assign({}, received.conversation.memory, {
-                            start_time: m_start,
-                            end_time: m_end
-                        })
-                    }
-                });
-                res.send(toSend);
-            }
-        })
+            res.send(toSend);
+        } else {
+            Section.findOne({
+                sectionName: section,
+                subject: subject,
+            }, function (err, obj) {
+                if (!obj) {
+                    let toSend = Object.assign({}, {
+                        replies: [{
+                            type: 'text',
+                            content: 'I can\'t find the class you requested. Please check your spelling and make sure that you are enlisted in that class first.'
+                        }],
+                    }, {
+                            conversation: {
+                                memory: {}
+                            }
+                        });
+                    Conversationid.update({
+                        conversationid: received.conversation.id
+                    }, {
+                            $set: {
+                                conversationid: undefined
+                            }
+                        });
+                    res.send(toSend);
+                } else {
+                    let toSend = Object.assign({}, {
+                        replies: [{
+                            type: 'quickReplies',
+                            content: {
+                                title: `You want to schedule a consultation for the class ${subject} ${section} ${m_start.format('MMMM Do, YYYY') === m_end.format('MMMM Do, YYYY') ? `on ${m_end.format('dddd, MMMM Do')} from ${m_start.format('h:mm a')} to ${m_end.format('h:mm a')}` : `from ${m_start.format('dddd, MMMM Do, h:mm a')} to ${m_end.format('dddd, MMMM Do, h:mm a')}`}?`,
+                                buttons: [{
+                                    title: 'Yes',
+                                    value: 'Yes'
+                                }, {
+                                    title: 'No',
+                                    value: 'No'
+                                }]
+                            }
+                        }],
+                    }, {
+                            conversation: {
+                                memory: Object.assign({}, received.conversation.memory, {
+                                    start_time: m_start,
+                                    end_time: m_end
+                                })
+                            }
+                        });
+                    res.send(toSend);
+                }
+            })
+        }
     }
 });
 
