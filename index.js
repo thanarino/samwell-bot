@@ -1527,51 +1527,66 @@ analyzeEntities = (sender, res, input) => {
                     });
                     // conversationID = undefined;
                 } else if (res.entities.subject.length == 1) {
-                    let tempID = Math.floor((Math.random() * 1000000) + 1);
-                    Conversationid.update({
-                        fbid: sender
-                    }, {
-                        $set: {
-                            conversationid: tempID
-                        }
-                    }, function (err, result) {
-                        if (result) {
-                            conversationID = tempID;
-                            build.dialog({
-                                    type: 'text',
-                                    content: input
-                                }, {
-                                    conversationId: conversationID
-                                })
-                                .then(res => {
-                                    console.log(res);
-                                    conversationId = res.conversation.id;
-                                    res.messages.map((message) => {
-                                        if (message.type === 'quickReplies') {
-                                            sendQuickReply(sender, message.content);
-                                        } else {
-                                            sendMessage(sender, {
-                                                text: message.content
-                                            });
-                                        }
-                                    });
-                                })
-                                .catch((err) => {
-                                    sendMessage(sender, {
-                                        text: 'Oops, we got an error from Recast.ai, our magic Human Understandinator(tm). Please try again.'
-                                    }).catch(console.error);
-                                    console.log(err.stack || err);
-                                    Conversationid.update({
-                                        fbid: sender
+                    if (res.entities.interval || res.entities.datetime.length == 2) {
+                        let tempID = Math.floor((Math.random() * 1000000) + 1);
+                        Conversationid.update({
+                            fbid: sender
+                        }, {
+                                $set: {
+                                    conversationid: tempID
+                                }
+                            }, function (err, result) {
+                                if (result) {
+                                    conversationID = tempID;
+                                    build.dialog({
+                                        type: 'text',
+                                        content: input
                                     }, {
-                                        $set: {
-                                            conversationid: undefined
-                                        }
-                                    });
-                                    // conversationID = undefined;
-                                })
-                        }
-                    })
+                                            conversationId: conversationID
+                                        })
+                                        .then(res => {
+                                            console.log(res);
+                                            conversationId = res.conversation.id;
+                                            res.messages.map((message) => {
+                                                if (message.type === 'quickReplies') {
+                                                    sendQuickReply(sender, message.content);
+                                                } else {
+                                                    sendMessage(sender, {
+                                                        text: message.content
+                                                    });
+                                                }
+                                            });
+                                        })
+                                        .catch((err) => {
+                                            sendMessage(sender, {
+                                                text: 'Oops, we got an error from Recast.ai, our magic Human Understandinator(tm). Please try again.'
+                                            }).catch(console.error);
+                                            console.log(err.stack || err);
+                                            Conversationid.update({
+                                                fbid: sender
+                                            }, {
+                                                    $set: {
+                                                        conversationid: undefined
+                                                    }
+                                                });
+                                            // conversationID = undefined;
+                                        })
+                                }
+                            })
+                    } else {
+                        sendMessage(sender, {
+                            text: 'I can\'t recognize some things in your request. Please make sure you put a space in between times and the dash symbol if you have one.'
+                        }).catch(console.error);
+                        console.log(err.stack || err);
+                        Conversationid.update({
+                            fbid: sender
+                        }, {
+                                $set: {
+                                    conversationid: undefined
+                                }
+                            });
+                    }
+                    
                 }
             } else if (res.intents[0].slug === "addclass") {
                 if (res.entities.number && !res.entities.subject) {
