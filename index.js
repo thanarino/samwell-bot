@@ -997,7 +997,7 @@ app.post('/all-consultations', (req, res) => {
         if (obj) {
             let studentid = obj.fbid;
             console.log(studentid);
-            Consultations.find({ studentID: studentid, isDone: false, isApprovedByStudent: true, isApprovedByTeacher: true }).sort({ 'startDate.$date': -1 }).limit(5).exec((err2, consultations) => {
+            Consultations.find({ studentID: studentid, isDone: false, isApprovedByStudent: true, isApprovedByTeacher: true, 'startDate.$date': {$gte: new Date()} }).sort({ 'startDate.$date': -1 }).limit(5).exec((err2, consultations) => {
                 console.log(consultations);
                 if (consultations.length > 0) {
                     let promises = consultations.map((consultation) => {
@@ -1598,8 +1598,6 @@ analyzeEntities = (sender, res, input) => {
             conversationID = obj.conversationid;
             console.log(conversationID);
         }
-
-        console.log(res);
 
         if (res.intents.length === 1) {
             if (res.intents[0].slug === "addconsultation") {
