@@ -1201,6 +1201,109 @@ checkConsultationConflict = (u_start, u_end, t_id) => {
     })
 }
 
+app.post("/all-classes", (req, res) => {
+    let received = req.body;
+
+    Conversationid.findOne({
+        conversationid: received.conversation.id
+    }, function (err, obj) {
+        if (err) {
+            let toSend = Object.assign({}, {
+                replies: [{
+                    type: 'text',
+                    content: 'There seems to be a problem :\\ No worries, just try again later.'
+                }],
+            }, {
+                    conversation: {
+                        memory: {}
+                    }
+                });
+            Conversationid.update({
+                conversationid: received.conversation.id
+            }, {
+                    $set: {
+                        conversationid: undefined
+                    }
+                });
+            res.send(toSend);
+        } else {
+            let fbid = obj.fbid;
+            Section.find({
+                studentList: fbid
+            }, (err, classes) => {
+                if (err) {
+                    let toSend = Object.assign({}, {
+                        replies: [{
+                            type: 'text',
+                            content: 'There seems to be a problem :\\ No worries, just try again later.'
+                        }],
+                    }, {
+                            conversation: {
+                                memory: {}
+                            }
+                        });
+                    Conversationid.update({
+                        conversationid: received.conversation.id
+                    }, {
+                            $set: {
+                                conversationid: undefined
+                            }
+                        });
+                    res.send(toSend);
+                } else {
+                    if (classes.length > 0) {
+                        let toSend = Object.assign({}, {
+                            replies: [{
+                                type: 'text',
+                                content: 'Here is a list of all the classes you are registered in:'
+                            }],
+                        }, {
+                            conversation: {
+                                memory: {}
+                            }
+                            });
+                        
+                        classes.map((section) => {
+                            toSend.replies.push({
+                                type: 'text',
+                                content: `${section.subject} - ${section.sectionName}: ${section.description} at ${section.room}`
+                            });
+                        });
+                        
+                        Conversationid.update({
+                            conversationid: received.conversation.id
+                        }, {
+                                $set: {
+                                    conversationid: undefined
+                                }
+                            });
+                        res.send(toSend);
+                    } else {
+                        let toSend = Object.assign({}, {
+                            replies: [{
+                                type: 'text',
+                                content: 'I think you have no classes registered yet. Please add some by telling me "add me to <subject> <section>"'
+                            }],
+                        }, {
+                                conversation: {
+                                    memory: {}
+                                }
+                            });
+                        Conversationid.update({
+                            conversationid: received.conversation.id
+                        }, {
+                                $set: {
+                                    conversationid: undefined
+                                }
+                            });
+                        res.send(toSend);
+                    }
+                }
+            })
+        }
+    });
+})
+
 app.post("/verify-consultation-hours", (req, res) => {
     let received = req.body;
 
@@ -1673,7 +1776,7 @@ analyzeEntities = (sender, res, input) => {
                         }
                     });
                 }
-            } else if (res.intents[0].slug === "greetings" || res.intents[0].slug === "goodbye" ||  res.intents[0].slug === "confirmentry" || res.intents[0].slug === "getcode" || res.intents[0].slug === "verifycode" || res.intents[0].slug === 'checkavailable' || res.intents[0].slug === 'seeavailable' || res.intents[0].slug === 'nextconsultation' || res.intents[0].slug === 'allconsultations' || res.intents[0].slug === 'help') {
+            } else if (res.intents[0].slug === "greetings" || res.intents[0].slug === "goodbye" || res.intents[0].slug === "confirmentry" || res.intents[0].slug === "getcode" || res.intents[0].slug === "verifycode" || res.intents[0].slug === 'checkavailable' || res.intents[0].slug === 'seeavailable' || res.intents[0].slug === 'nextconsultation' || res.intents[0].slug === 'allconsultations' || res.intents[0].slug === 'help' || res.intents[0].slug === 'allclasses' ) {
                 // conversationId = (typeof conversationId === 'undefined') ? Math.floor((Math.random() * 1000000) + 1) : conversationId;
                 build.dialog({
                         type: 'text',
