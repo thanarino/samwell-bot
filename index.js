@@ -722,7 +722,7 @@ app.post("/see-available", (req, res) => {
                                                     } else {
                                                         return ` ${moment(time.start, 'hh:mm').format('hh:mm a')} to ${moment(time.end, 'hh:mm').format('hh:mm a')}`
                                                     }
-                                                })}on ${teacher.consultationHours[day].fullName}s.` : `I don't think ${teacher.gender === "male" ? `Sir` : `Ma'am`} ${teacher.given_name} ${teacher.family_name} has consultation hours on that day. Try another day.`}`
+                                                })}on ${teacher.consultationHours[day].fullName}s.` : `I don't think ${teacher.gender === "male" ? `Sir` : `Ma'am`} ${teacher.given_name} ${teacher.family_name} has consultation hours on ${teacher.consultationHours[day].fullName}s. Try another day.`}`
                                             }],
                                         }, {
                                                 conversation: {
